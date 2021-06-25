@@ -1,0 +1,13 @@
+﻿  main.cpp
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,25): warning C4101: 'vdc': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,13): warning C4101: 'v3': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,21): warning C4101: 'v7': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,30): warning C4101: 'vdc2': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,9): warning C4101: 'v1': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(150,17): warning C4101: 'v5': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(226,22): warning C4101: 'Y2': variável local não referenciada
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\main.cpp(325,9): warning C4101: 'c': variável local não referenciada
+  routines.cpp
+C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Simulacao_MIT\routines.cpp(91,25): warning C4244: '=': conversão de 'double' para 'float', possível perda de dados
+  Gerando Código...
+  Simulacao_MIT.vcxproj -> C:\Mestrado\Simulacao_MIT\Simulacao_MIT\Debug\Simulacao_MIT.exe
