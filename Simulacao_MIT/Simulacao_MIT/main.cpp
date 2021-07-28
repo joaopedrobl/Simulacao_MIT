@@ -1,6 +1,6 @@
-/*  Máquina assíncrona trifásica */
-/*  Modelo para componente fundamental (sem harmônicas espaciais)  */
-/*  Simulação  de defeito no estator (curto-circuito entre espiras) e assimetrias no rotor*/
+/*  Mï¿½quina assï¿½ncrona trifï¿½sica */
+/*  Modelo para componente fundamental (sem harmï¿½nicas espaciais)  */
+/*  Simulaï¿½ï¿½o  de defeito no estator (curto-circuito entre espiras) e assimetrias no rotor*/
 #define _CRT_SECURE_NO_WARNINGS
 #include <conio.h>
 #include <stdio.h>
@@ -10,14 +10,14 @@
 #include "routines.h"
 
 #define pi     3.14159265358979323846
-#define NiterG 300000    //130000;4000;300000(com conversor) /* Número total de pontos da simulação */
-#define Niter  10       //20 ;200;40(com conversor)         /* Número loops antes de pegar um  ponto */
-#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulação dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
-#define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tensão máxima nos bornes da carga*/
+#define NiterG 300000    //130000;4000;300000(com conversor) /* Nï¿½mero total de pontos da simulaï¿½ï¿½o */
+#define Niter  10       //20 ;200;40(com conversor)         /* Nï¿½mero loops antes de pegar um  ponto */
+#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulaï¿½ï¿½o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
+#define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tensï¿½o mï¿½xima nos bornes da carga*/
 
 int i, j;
 
-// Dados de Placa do Motor de Indução Trifásico WEG 60
+// Dados de Placa do Motor de Induï¿½ï¿½o Trifï¿½sico WEG 60
 //  (0.75 kW / 1.0 cv, lab.)
 //  Classe N
 // wn = 1720 rpm = 180.118 rad/s - escorregamento = 4.4444%
@@ -29,38 +29,54 @@ int i, j;
 
 // Dados obtidos a partir dos ensaios classicos realizados pelo Clayton
 // Maq. weg 60 (1 cv, lab.)
-const double Rs = 12.5;         /*  resistência do estator    */
-const double Lls = 0.0383;      /*  Indutância de dispersão do estator  lsl  */
-const double Lms = 0.4506;      /*  Indutância principal (própia) do estator  Lsp  */
-const double Lsr = 0.4506;      /*  Indutância mútua estator-rotor  Msr */
-const double Rr = 8.9;           /*  resistência do rotor   */
-const double Llr = 0.0383;      /*  Indutância de dispersão do rotor  lrl */
-const double Lmr = 0.4506;      /*  Indutância principal do rotor  Lrp */
-//const double Lsc = 1.5*Lsp+lsl; /*  Indutância cíclica do estator   */
-//const double Lrc = 1.5*Lrp+lrl; /*  Indutância cíclica do rotor   */
-//const double p = 1.0;           /*  Número de pares de pólos   */
-const double p = 1.0;           /*  Número de pares de pólos   */
-const double Jt = 0.023976 * 1.;  /*  Momento de Inércia   */
-const double fv = 1. * 0.0014439; /*  coeficiente de atrito dinâmico   */
+const double Rs = 12.5;         /*  resistï¿½ncia do estator    */
+const double Lls = 0.0383;      /*  Indutï¿½ncia de dispersï¿½o do estator  lsl  */
+const double Lms = 0.4506;      /*  Indutï¿½ncia principal (prï¿½pia) do estator  Lsp  */
+const double Lsr = 0.4506;      /*  Indutï¿½ncia mï¿½tua estator-rotor  Msr */
+const double Rr = 8.9;           /*  resistï¿½ncia do rotor   */
+const double Llr = 0.0383;      /*  Indutï¿½ncia de dispersï¿½o do rotor  lrl */
+const double Lmr = 0.4506;      /*  Indutï¿½ncia principal do rotor  Lrp */
+//const double Lsc = 1.5*Lsp+lsl; /*  Indutï¿½ncia cï¿½clica do estator   */
+//const double Lrc = 1.5*Lrp+lrl; /*  Indutï¿½ncia cï¿½clica do rotor   */
+//const double p = 1.0;           /*  Nï¿½mero de pares de pï¿½los   */
+const double p = 1.0;           /*  Nï¿½mero de pares de pï¿½los   */
+const double Jt = 0.023976 * 1.;  /*  Momento de Inï¿½rcia   */
+const double fv = 1. * 0.0014439; /*  coeficiente de atrito dinï¿½mico   */
+
+//ParÃ¢metros do motor para novas equaÃ§Ãµes (Obtidos a partir de artigo pesquisado)
+
+const double Ns = 156; /* NÃºmero de voltas da bobina do estator */
+const double rs = 1.5; /* Resitencia do estator */
+const double Ls1 = 0.007; /* IndutÃ¢ncia de dispersÃ£o do estator */
+
+const double nb = 3; /* NÃºmero de barras do rotor */
+const double Rb = 0.0000009694;  /*  resistÃªncia das barras   */
+const double Re = 0.0000005;	/* resistencia do endring */
+const double Lb = 0.28; /* Auto indutÃ¢ncia da barra do rotor */
+const double Le = 0.036; /* Auto indutÃ¢ncia do endring */
+
+const double r = 0.070; /* Raio medio do entreferro */
+const double g = 0.00028; /* Entreferro */
+const double l = 0.120; /* Comprimento efetivo do rotor */
 
 // **********************************************************************
 
 // Maq. weg 60 (1 cv, lab.)
-// Dados de catálogo e ensaios a vazio e curto-circuito realizados pelo Claudio
-//const double Rs = 7.65;         /*  resistência do estator    */
-//const double lsl = 0.0241;      /*  Indutância de dispersão do estator   */
-//const double Lsp = 0.4709;      /*  Indutância principal (própia) do estator    */
-//const double Msr = 0.4709;      /*  Indutância mútua estator-rotor   */
-//const double Rr = 8.166;        /*  resistência do rotor   */
-//const double lrl = 0.0257;      /*  Indutância de dispersão do rotor   */
-//const double Lrp = 0.4709;      /*  Indutância principal do rotor   */
-//const double Lsc = 1.5*Lsp+lsl; /*  Indutância cíclica do estator   */
-//const double Lrc = 1.5*Lrp+lrl; /*  Indutância cíclica do rotor   */
-//const double p = 2.0;           /*  Número de pares de pólos   */
-////const double Jt = 0.00294;      /*  Momento de Inércia do motor  */
-//const double Jt = 0.023976;  /*  Momento de Inércia   motor+carga   */
-////const double fv = 0.0008169;    /*  coeficiente de atrito dinâmico do motor  */
-//const double fv = 0.0014439; /*  coeficiente de atrito dinâmico  motor+carga  */
+// Dados de catï¿½logo e ensaios a vazio e curto-circuito realizados pelo Claudio
+//const double Rs = 7.65;         /*  resistï¿½ncia do estator    */
+//const double lsl = 0.0241;      /*  Indutï¿½ncia de dispersï¿½o do estator   */
+//const double Lsp = 0.4709;      /*  Indutï¿½ncia principal (prï¿½pia) do estator    */
+//const double Msr = 0.4709;      /*  Indutï¿½ncia mï¿½tua estator-rotor   */
+//const double Rr = 8.166;        /*  resistï¿½ncia do rotor   */
+//const double lrl = 0.0257;      /*  Indutï¿½ncia de dispersï¿½o do rotor   */
+//const double Lrp = 0.4709;      /*  Indutï¿½ncia principal do rotor   */
+//const double Lsc = 1.5*Lsp+lsl; /*  Indutï¿½ncia cï¿½clica do estator   */
+//const double Lrc = 1.5*Lrp+lrl; /*  Indutï¿½ncia cï¿½clica do rotor   */
+//const double p = 2.0;           /*  Nï¿½mero de pares de pï¿½los   */
+////const double Jt = 0.00294;      /*  Momento de Inï¿½rcia do motor  */
+//const double Jt = 0.023976;  /*  Momento de Inï¿½rcia   motor+carga   */
+////const double fv = 0.0008169;    /*  coeficiente de atrito dinï¿½mico do motor  */
+//const double fv = 0.0014439; /*  coeficiente de atrito dinï¿½mico  motor+carga  */
 
 // **********************************************************************
 
@@ -78,7 +94,7 @@ double ps_alim, ps_mot;
 matrice L, dL, A, b, inv_L, B, R;
 vecteur x, U, BU, Ad;
 
-/* Método específico de inversão de Matriz SVD */
+/* Mï¿½todo especï¿½fico de inversï¿½o de Matriz SVD */
 vecteur w;
 matrice u, v, inva;
 
@@ -144,7 +160,7 @@ void calcul_de_L(void)
 
 }
 
-// Geração da Tensão de Alimentação
+// Geraï¿½ï¿½o da Tensï¿½o de Alimentaï¿½ï¿½o
 void calcul_de_U(void)
 {
 	double v1, v3, v5, v7, vdc, vdc2, fs;
@@ -157,11 +173,11 @@ void calcul_de_U(void)
 
 	vsdef = 0.0;
 
-	// Entrada do vetor de Tensão
+	// Entrada do vetor de Tensï¿½o
 	U[1] = va1;
 	U[2] = vb1;
 	U[3] = vc1;
-	U[4] = U[5] = U[6] = 0.0;  // Tensões Rotóricas
+	U[4] = U[5] = U[6] = 0.0;  // Tensï¿½es Rotï¿½ricas
 	U[7] = -Cr;            // Conjugado de Carga (resistente)
 	U[8] = 0.0;
 }
@@ -172,14 +188,14 @@ void calcul_de_U(void)
 
 void calcul_vecteur(double d[rang], double c[rang])
 {
-	// As funções de inversão, multiplicação e subtração de matrizes estão no programa routines
+	// As funï¿½ï¿½es de inversï¿½o, multiplicaï¿½ï¿½o e subtraï¿½ï¿½o de matrizes estï¿½o no programa routines
 	calcul_de_L();          /* Calcula-se a matriz L */
 
 	calcul_de_R();          /* Matriz R */
 
-	inv(L, inv_L);  /* Inversão de L */
+	inv(L, inv_L);  /* Inversï¿½o de L */
 
-	// Método do Pivô de Gauss (foi usado aqui pq é mais rápido)
+	// Mï¿½todo do Pivï¿½ de Gauss (foi usado aqui pq ï¿½ mais rï¿½pido)
 
 	multmat_mat(inv_L, R, A);
 	multmat_vect(A, d, Ad);  // A * x
@@ -187,7 +203,7 @@ void calcul_vecteur(double d[rang], double c[rang])
 	sousvect_vect(BU, Ad, c);
 }
 
-// Inicialização das Variáveis
+// Inicializaï¿½ï¿½o das Variï¿½veis
 void init()
 {
 
@@ -220,7 +236,7 @@ void init()
 	teta = x[8] = 0.0;
 }
 
-// Método Runge-kutta
+// Mï¿½todo Runge-kutta
 void mas()
 {
 	vecteur Y0, dx, Y1, Y2, Y3, Y4, tempo, K1, K2, K3, K4, tempo_2, tempo_3;
@@ -269,12 +285,12 @@ void mas()
 	om = x[7];
 	teta = x[8];
 
-	/* Cálculo do conjugado duas formas equivalentes*/
+	/* Cï¿½lculo do conjugado duas formas equivalentes*/
 
 	te = -(R[7][4] * ira + R[7][5] * irb + R[7][6] * irc);
 
-	// Para determinação da tensão entre os neutros
-	// Cálculo da tensao nos bornes da carga e tensao de neutro
+	// Para determinaï¿½ï¿½o da tensï¿½o entre os neutros
+	// Cï¿½lculo da tensao nos bornes da carga e tensao de neutro
 	/*
 	double somme_dLI1, somme_L_dI1;
 	double somme_dLI2, somme_L_dI2;
@@ -321,7 +337,7 @@ void mas()
 int wmain()
 {
 
-	init();    /* x est rempli à 0 */
+	init();    /* x est rempli ï¿½ 0 */
 	int l, c;
 	FILE* fic;
 
@@ -329,7 +345,7 @@ int wmain()
 
 
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	/* denominação do arquivo de saída */
+	/* denominaï¿½ï¿½o do arquivo de saï¿½da */
 	//fic=fopen("s000c30c100bi11_30A.dat","w");
 	fic = fopen("joao_pedro.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -345,7 +361,7 @@ int wmain()
 	results->mat[i][6] = te;
 
 
-	// Partida com carga para acelerar a simulação
+	// Partida com carga para acelerar a simulaï¿½ï¿½o
 
 	Cr = 4.1;// Conjugado de carga nominal       = 4.1 Nm <<=======
 
@@ -379,7 +395,7 @@ int wmain()
 	printf("t= %lf\n", t);
 
 
-	/* Aramazenamento dos resultados no arquivo de saída  */
+	/* Aramazenamento dos resultados no arquivo de saï¿½da  */
 
 	for (i = 0; i < NiterG; i++)
 	{
