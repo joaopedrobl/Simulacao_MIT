@@ -1,6 +1,6 @@
 /*  M�quina ass�ncrona trif�sica */
 /*  Modelo para componente fundamental (sem harm�nicas espaciais)  */
-/*  Simula��o  de defeito no estator (curto-circuito entre espiras) e assimetrias no rotor*/
+/*  Simula��o  de defeito no estator (curto-cir3uito entre espir1s) e assimetrias no rotor*/
 #define _CRT_SECURE_NO_WARNINGS
 #include <conio.h>
 #include <stdio.h>
@@ -59,10 +59,12 @@ const double r = 0.070; /* Raio medio do entreferro */
 const double g = 0.00028; /* Entreferro */
 const double l = 0.120; /* Comprimento efetivo do rotor */
 
+const double mu  = 0.0000012566;
+
 // **********************************************************************
 
 // Maq. weg 60 (1 cv, lab.)
-// Dados de cat�logo e ensaios a vazio e curto-circuito realizados pelo Claudio
+// Dados de cat�logo e ensaios a vazio e curto-cir3uito realizados pelo Claudio
 //const double Rs = 7.65;         /*  resist�ncia do estator    */
 //const double lsl = 0.0241;      /*  Indut�ncia de dispers�o do estator   */
 //const double Lsp = 0.4709;      /*  Indut�ncia principal (pr�pia) do estator    */
@@ -80,7 +82,7 @@ const double l = 0.120; /* Comprimento efetivo do rotor */
 
 // **********************************************************************
 
-double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ira, irb, irc, t, om, te, Rbf;
+double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ir1, ir2, ir3, ire, t, om, te, Rbf;
 
 /* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
 
@@ -142,6 +144,7 @@ void calcul_de_R(void)
 	R[8][5] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
 	R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
 	R[8][7] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+	R[7][7] = nb*Re;
 	R[8][8] = fv;
 	R[9][8] = -1.0;
 }
@@ -151,24 +154,38 @@ void calcul_de_L(void)
 	double costeta;
 	double costeta_neg;
 	double costeta_pos;
+	double Lkk;
 
-	costeta = cos(p * teta);
-	costeta_neg = cos(p * teta - 2.0 * pi / 3.0);
-	costeta_pos = cos(p * teta + 2.0 * pi / 3.0);
+	Lkk = (mu*l*r/g)*(4/9*pi);
 
 	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
 	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
-	L[1][4] = L[2][5] = L[3][6] = L[4][1] = L[5][2] = L[6][3] = Lsr * costeta;
-	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_neg;
-	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_pos;
-	L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
-	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;
-	L[7][1] = L[7][2] = L[7][3] = L[7][4] = L[7][5] = L[7][6] = L[7][8] = 0.0;
-	L[8][1] = L[8][2] = L[8][3] = L[8][4] = L[8][5] = L[8][6] = L[8][7] = 0.0;
-	L[1][7] = L[2][7] = L[3][7] = L[4][7] = L[5][7] = L[6][7] = 0.0;
-	L[1][8] = L[2][8] = L[3][8] = L[4][8] = L[5][8] = L[6][8] = 0.0;
-	L[7][7] = Jt;
-	L[8][8] = 1.0;
+
+	L[1][4] = L[4][1] = Lsr * cos(p*(teta+pi/3.0));
+	L[1][5] = L[5][1] = Lsr * cos(p*(teta+pi));
+	L[1][6] = L[6][1] = Lsr * cos(p*(teta+5.0*pi/3.0));
+	L[2][4] = L[4][2] = Lsr * cos(p*(teta+pi/3)-2*pi/3);
+	L[2][5] = L[5][2] = Lsr * cos(p*(teta+pi)-2*pi/3);
+	L[2][6] = L[6][2] = Lsr * cos(p*(teta+5*pi/3)-2*pi/3);
+	L[3][4] = L[4][3] = Lsr * cos(p*(teta+pi/3)+2*pi/3);
+	L[3][5] = L[5][3] = Lsr * cos(p*(teta+pi)+2*pi/3);
+	L[3][6] = L[6][3] = Lsr * cos(p*(teta+5*pi/3)+2*pi/3);
+
+	L[4][4] = L[5][5] = L[6][6] = Lkk + 2*(Le + Lb);
+	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = (-1.0 / 2.0 * Lkk) - Lb;
+
+	L[7][1] = L[7][2] = L[7][3] = L[8][1] = L[8][2] = L[8][3] = L[9][1] = L[9][2] = L[9][3] = 0.0;
+
+	L[8][4] = L[8][5] = L[8][6] = L[8][7] = L[8][9] = 0.0;
+	L[9][4] = L[9][5] = L[9][6] = L[9][7] = L[9][8] = 0.0;
+
+	L[1][7] = L[2][7] = L[3][7] = 0;
+	L[1][8] = L[2][8] = L[3][8] = L[4][8] = L[5][8] = L[6][8] = L[7][8] = 0;
+	L[1][9] = L[2][9] = L[3][9] = L[4][9] = L[5][9] = L[6][9] = L[7][9] = 0;
+	L[7][4] = L[7][5] = L[7][6] = L[4][7] = L[5][7] = L[6][7] = -Le;
+
+	L[8][8] = Jt;
+	L[9][9] = 1.0;
 
 }
 
@@ -190,8 +207,9 @@ void calcul_de_U(void)
 	U[2] = vb1;
 	U[3] = vc1;
 	U[4] = U[5] = U[6] = 0.0;  // Tens�es Rot�ricas
-	U[7] = -Cr;            // Conjugado de Carga (resistente)
-	U[8] = 0.0;
+	U[7] = 0.0; // Tensão endring
+	U[8] = -Cr;            // Conjugado de Carga (resistente)
+	U[9] = 0.0;
 }
 
 
@@ -241,11 +259,12 @@ void init()
 	isa1 = x[1] = 0.0;
 	isb1 = x[2] = 0.0;
 	isc1 = x[3] = 0.0;
-	ira = x[4] = 0.0;
-	irb = x[5] = 0.0;
-	irc = x[6] = 0.0;
-	om = x[7] = 0.0;
-	teta = x[8] = 0.0;
+	ir1 = x[4] = 0.0;
+	ir2 = x[5] = 0.0;
+	ir3 = x[6] = 0.0;
+	ire = x[7] = 0.0;
+	om = x[8] = 0.0;
+	teta = x[9] = 0.0;
 }
 
 // M�todo Runge-kutta
@@ -291,15 +310,16 @@ void mas()
 	isa1 = x[1];
 	isb1 = x[2];
 	isc1 = x[3];
-	ira = x[4];
-	irb = x[5];
-	irc = x[6];
-	om = x[7];
-	teta = x[8];
+	ir1 = x[4];
+	ir2 = x[5];
+	ir3 = x[6];
+	ire = x[7];
+	om = x[8];
+	teta = x[9];
 
 	/* C�lculo do conjugado duas formas equivalentes*/
 
-	te = -(R[7][4] * ira + R[7][5] * irb + R[7][6] * irc);
+	te = -(R[8][5] * ir1 + R[8][6] * ir2 + R[8][7] * ir3);
 
 	// Para determina��o da tens�o entre os neutros
 	// C�lculo da tensao nos bornes da carga e tensao de neutro

@@ -7,7 +7,7 @@ typedef struct {           /* Matrix structure for C library  */
     double** mat;          /* the "member functions" below.   */
 } matrix;
 
-const int rang = 9;
+const int rang = 10;
 
 typedef double vecteur[rang];
 typedef double matrice[rang][rang];
