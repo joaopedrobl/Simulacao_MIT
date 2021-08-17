@@ -36,8 +36,8 @@ const double Lsr = 0.4506;      /*  Indut�ncia m�tua estator-rotor  Msr */
 const double Rr = 8.9;           /*  resist�ncia do rotor   */
 const double Llr = 0.0383;      /*  Indut�ncia de dispers�o do rotor  lrl */
 const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
-//const double Lsc = 1.5*Lsp+lsl; /*  Indut�ncia c�clica do estator   */
-//const double Lrc = 1.5*Lrp+lrl; /*  Indut�ncia c�clica do rotor   */
+const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
+const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
 //const double p = 1.0;           /*  N�mero de pares de p�los   */
 const double p = 1.0;           /*  N�mero de pares de p�los   */
 const double Jt = 0.023976 * 1.;  /*  Momento de In�rcia   */
@@ -111,7 +111,7 @@ void calcul_de_R(void)
 	double sinteta_pos;
 	double sinteta_neg;
 
-	c = -Lsr * x[7] * p; //TODO: Verificar
+	c = -Lsr * x[8] * p; //TODO: Verificar
 	sinteta = sin(p * teta);
 	sinteta_pos = sin(p * teta + 2.0 * pi / 3.0);
 	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
@@ -140,7 +140,7 @@ void calcul_de_R(void)
 
 	R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = -Rb;
 	R[7][4] = R[7][5] = R[7][6] = R[4][7] = R[5][7] = R[6][7] = -Re;
-
+	
 	R[8][5] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
 	R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
 	R[8][7] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
@@ -159,7 +159,9 @@ void calcul_de_L(void)
 	Lkk = (mu*l*r/g)*(4/9*pi);
 
 	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
-	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
+	//L[1][1] = L[2][2] = L[3][3] = Lsc;
+	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
+	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 
 	L[1][4] = L[4][1] = Lsr * cos(p*(teta+pi/3.0));
 	L[1][5] = L[5][1] = Lsr * cos(p*(teta+pi));
@@ -172,7 +174,9 @@ void calcul_de_L(void)
 	L[3][6] = L[6][3] = Lsr * cos(p*(teta+5*pi/3)+2*pi/3);
 
 	L[4][4] = L[5][5] = L[6][6] = Lkk + 2*(Le + Lb);
-	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = (-1.0 / 2.0 * Lkk) - Lb;
+	//L[4][4] = L[5][5] = L[6][6] = Lrc;
+	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = (-0.5 * Lkk) - Lb;
+	//L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = 0;
 
 	L[7][1] = L[7][2] = L[7][3] = L[8][1] = L[8][2] = L[8][3] = L[9][1] = L[9][2] = L[9][3] = 0.0;
 
@@ -184,6 +188,7 @@ void calcul_de_L(void)
 	L[1][9] = L[2][9] = L[3][9] = L[4][9] = L[5][9] = L[6][9] = L[7][9] = 0;
 	L[7][4] = L[7][5] = L[7][6] = L[4][7] = L[5][7] = L[6][7] = -Le;
 
+	L[7][7] = 3*Le;
 	L[8][8] = Jt;
 	L[9][9] = 1.0;
 
@@ -227,10 +232,16 @@ void calcul_vecteur(double d[rang], double c[rang])
 
 	// M�todo do Piv� de Gauss (foi usado aqui pq � mais r�pido)
 
-	multmat_mat(inv_L, R, A);
-	multmat_vect(A, d, Ad);  // A * x
-	multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
-	sousvect_vect(BU, Ad, c);
+	//multmat_mat(inv_L, R, A);
+	//multmat_vect(A, d, Ad);  // A * x
+	//multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
+	//sousvect_vect(BU, Ad, c);
+
+	multmat_vect(R, d, BU);
+	sousvect_vect(U, BU, BU);
+	multmat_vect(inv_L, BU, c);
+
+
 }
 
 // Inicializa��o das Vari�veis
