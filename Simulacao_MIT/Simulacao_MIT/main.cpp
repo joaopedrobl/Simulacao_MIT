@@ -30,9 +30,10 @@ int i, j;
 // Dados obtidos a partir dos ensaios classicos realizados pelo Clayton
 // Maq. weg 60 (1 cv, lab.)
 const double Rs = 12.5;         /*  resist�ncia do estator    */
-const double Lls = 0.0383;      /*  Indut�ncia de dispers�o do estator  lsl  */
-const double Lms = 0.4506;      /*  Indut�ncia principal (pr�pia) do estator  Lsp  */
-const double Lsr = 0.4506;      /*  Indut�ncia m�tua estator-rotor  Msr */
+//const double Lls = 0.0383;      /*  Indut�ncia de dispers�o do estator  lsl  */
+const double Lls = 0.007;
+double Lms = 0.4506;      /*  Indut�ncia principal (pr�pia) do estator  Lsp  */
+double Lsr = 0.4506;      /*  Indut�ncia m�tua estator-rotor  Msr */
 const double Rr = 8.9;           /*  resist�ncia do rotor   */
 const double Llr = 0.0383;      /*  Indut�ncia de dispers�o do rotor  lrl */
 const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
@@ -50,16 +51,18 @@ const double rs = 1.5; /* Resitencia do estator */
 const double Ls1 = 0.007; /* Indutância de dispersão do estator */
 
 const double nb = 3; /* Número de barras do rotor */
-const double Rb = 0.0000009694;  /*  resistência das barras   */
-const double Re = 0.0000005;	/* resistencia do endring */
-const double Lb = 0.28; /* Auto indutância da barra do rotor */
-const double Le = 0.036; /* Auto indutância do endring */
+const double Rb = 0.000096940036;  /*  resistência das barras   */
+const double Re = 0.000005;	/* resistencia do endring */
+const double Lb = 0.00000028; /* Auto indutância da barra do rotor */
+const double Le = 0.000000036; /* Auto indutância do endring */
 
 const double r = 0.070; /* Raio medio do entreferro */
 const double g = 0.00028; /* Entreferro */
 const double l = 0.120; /* Comprimento efetivo do rotor */
 
-const double mu  = 0.0000012566;
+const double mu  = 0.00000125663;
+
+
 
 // **********************************************************************
 
@@ -116,7 +119,7 @@ void calcul_de_R(void)
 	sinteta_pos = sin(p * teta + 2.0 * pi / 3.0);
 	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
 
-	R[1][1] = R[2][2] = R[3][3] = Rs;
+	R[1][1] = R[2][2] = R[3][3] = rs;
 	R[4][4] = R[5][5] = R[6][6] = 2*(Rb + Re);
 	R[1][2] = R[1][3] = R[1][7] = R[1][8] = R[1][9] = 0.0;
 	R[2][1] = R[2][3] = R[2][7] = R[2][8] = R[2][9] = 0.0;
@@ -128,25 +131,32 @@ void calcul_de_R(void)
 	R[8][1] = R[8][2] = R[8][3] = R[8][4] = R[8][9] = 0.0;
 	R[9][1] = R[9][2] = R[9][3] = R[9][4] = R[9][5] = R[9][6] = R[9][7] = R[9][9] = 0.0;
 
-	R[1][4] = R[4][1] = c * sin(p*(teta+pi/3.0));
-	R[1][5] = R[5][1] = c * sin(p*(teta+pi));
-	R[1][6] = R[6][1] = c * sin(p*(teta+5.0*pi/3.0));
-	R[2][4] = R[4][2] = c * sin(p*(teta+pi/3)-2*pi/3);
-	R[2][5] = R[5][2] = c * sin(p*(teta+pi)-2*pi/3);
-	R[2][6] = R[6][2] = c * sin(p*(teta+5*pi/3)-2*pi/3);
-	R[3][4] = R[4][3] = c * sin(p*(teta+pi/3)+2*pi/3);
-	R[3][5] = R[5][3] = c * sin(p*(teta+pi)+2*pi/3);
-	R[3][6] = R[6][3] = c * sin(p*(teta+5*pi/3)+2*pi/3);
+	R[1][4] = R[4][1] = c * sin(p*(teta));
+	R[1][5] = R[5][1] = c * sin(p*(teta-2*pi/3));
+	R[1][6] = R[6][1] = c * sin(p*(teta+2*pi/3.0));
+
+	R[2][4] = R[4][2] = c * sin(p * (teta + 2 * pi / 3.0));
+	R[2][5] = R[5][2] = c * sin(p * (teta));
+	R[2][6] = R[6][2] = c * sin(p * (teta - 2 * pi / 3));
+
+	R[3][4] = R[4][3] = c * sin(p * (teta - 2 * pi / 3));
+	R[3][5] = R[5][3] = c * sin(p * (teta + 2 * pi / 3.0));
+	R[3][6] = R[6][3] = c * sin(p * (teta));
 
 	R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = -Rb;
 	R[7][4] = R[7][5] = R[7][6] = R[4][7] = R[5][7] = R[6][7] = -Re;
 	
-	R[8][5] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
-	R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
-	R[8][7] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+	//R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
+	//R[8][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
+	//R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
+
+	R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
+	R[8][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
+	R[8][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+
 	R[7][7] = nb*Re;
 	R[8][8] = fv;
-	R[9][8] = -1.0;
+	R[9][8] = -1;
 }
 
 void calcul_de_L(void)
@@ -156,22 +166,25 @@ void calcul_de_L(void)
 	double costeta_pos;
 	double Lkk;
 
-	Lkk = (mu*l*r/g)*(4/9*pi);
+	Lkk = (mu*l*r/g)*(1-(2*pi/3)/(2*pi))*(2*pi/3);
 
 	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
 	//L[1][1] = L[2][2] = L[3][3] = Lsc;
 	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
 	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 
-	L[1][4] = L[4][1] = Lsr * cos(p*(teta+pi/3.0));
-	L[1][5] = L[5][1] = Lsr * cos(p*(teta+pi));
-	L[1][6] = L[6][1] = Lsr * cos(p*(teta+5.0*pi/3.0));
-	L[2][4] = L[4][2] = Lsr * cos(p*(teta+pi/3)-2*pi/3);
-	L[2][5] = L[5][2] = Lsr * cos(p*(teta+pi)-2*pi/3);
-	L[2][6] = L[6][2] = Lsr * cos(p*(teta+5*pi/3)-2*pi/3);
-	L[3][4] = L[4][3] = Lsr * cos(p*(teta+pi/3)+2*pi/3);
-	L[3][5] = L[5][3] = Lsr * cos(p*(teta+pi)+2*pi/3);
-	L[3][6] = L[6][3] = Lsr * cos(p*(teta+5*pi/3)+2*pi/3);
+	L[1][4] = L[4][1] = Lsr * cos(p * (teta));
+	L[1][5] = L[5][1] = Lsr * cos(p * (teta - 2 * pi / 3));
+	L[1][6] = L[6][1] = Lsr * cos(p * (teta + 2 * pi / 3.0));
+
+	L[2][4] = L[4][2] = Lsr * cos(p * (teta + 2 * pi / 3.0));
+	L[2][5] = L[5][2] = Lsr * cos(p * (teta));
+	L[2][6] = L[6][2] = Lsr * cos(p * (teta - 2 * pi / 3));
+
+	L[3][4] = L[4][3] = Lsr * cos(p * (teta - 2 * pi / 3));
+	L[3][5] = L[5][3] = Lsr * cos(p * (teta + 2 * pi / 3.0));
+	L[3][6] = L[6][3] = Lsr * cos(p * (teta));
+
 
 	L[4][4] = L[5][5] = L[6][6] = Lkk + 2*(Le + Lb);
 	//L[4][4] = L[5][5] = L[6][6] = Lrc;
@@ -380,6 +393,10 @@ void mas()
 int wmain()
 {
 
+	Lms = (Ns/(2 * p))* (Ns / (2 * p)) * ((pi * mu * l * r) / g);
+	Lsr = 4/pi * Lms/Ns *sin(p*pi/3);
+
+
 	init();    /* x est rempli � 0 */
 	int l, c;
 	FILE* fic;
@@ -393,7 +410,7 @@ int wmain()
 	fic = fopen("joao_pedro.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-	results = mmake(NiterG, 7);
+	results = mmake(NiterG, 8);
 
 	results->mat[i][0] = t;
 	results->mat[i][1] = om;
@@ -402,6 +419,7 @@ int wmain()
 	results->mat[i][4] = isc1;
 	results->mat[i][5] = isdef;
 	results->mat[i][6] = te;
+	results->mat[i][7] = teta;
 
 
 	// Partida com carga para acelerar a simula��o
@@ -426,7 +444,7 @@ int wmain()
 		results->mat[i][4] = isc1;
 		results->mat[i][5] = isdef;
 		results->mat[i][6] = te;   // conjugado eletromagnetico
-
+		results->mat[i][7] = teta;
 
 		if (_kbhit() && (_getch() == 27)) i = NiterG;
 
@@ -442,14 +460,15 @@ int wmain()
 
 	for (i = 0; i < NiterG; i++)
 	{
-		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
+		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
 			results->mat[i][0],
 			results->mat[i][1],
 			results->mat[i][2],
 			results->mat[i][3],
 			results->mat[i][4],
 			results->mat[i][5],
-			results->mat[i][6]);
+			results->mat[i][6],
+			results->mat[i][7]);
 	}
 
 	fclose(fic);

@@ -82,7 +82,7 @@ void mulmat_const(matrice a, double factor, matrice s)
 void multmat_vect(matrice a, vecteur b, vecteur s)
 {
     int l, m;
-    float temp;
+    double temp;
 
     for (l = 1; l < rang; l++)
     {
