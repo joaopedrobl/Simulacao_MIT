@@ -53,8 +53,8 @@ const double Ls1 = 0.007; /* Indutância de dispersão do estator */
 const double nb = 3; /* Número de barras do rotor */
 const double Rb = 0.000096940036;  /*  resistência das barras   */
 const double Re = 0.000005;	/* resistencia do endring */
-const double Lb = 0.00000028; /* Auto indutância da barra do rotor */
-const double Le = 0.000000036; /* Auto indutância do endring */
+const double Lb = 0.00000028 * 1000000; /* Auto indutância da barra do rotor */
+const double Le = 0.000000036 * 1000000; /* Auto indutância do endring */
 
 const double r = 0.070; /* Raio medio do entreferro */
 const double g = 0.00028; /* Entreferro */
@@ -343,7 +343,7 @@ void mas()
 
 	/* C�lculo do conjugado duas formas equivalentes*/
 
-	te = -(R[8][5] * ir1 + R[8][6] * ir2 + R[8][7] * ir3);
+	te = -(R[8][4] * ir1 + R[8][5] * ir2 + R[8][6] * ir3);
 
 	// Para determina��o da tens�o entre os neutros
 	// C�lculo da tensao nos bornes da carga e tensao de neutro
@@ -410,7 +410,7 @@ int wmain()
 	fic = fopen("joao_pedro.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-	results = mmake(NiterG, 8);
+	results = mmake(NiterG, 11);
 
 	results->mat[i][0] = t;
 	results->mat[i][1] = om;
@@ -420,15 +420,18 @@ int wmain()
 	results->mat[i][5] = isdef;
 	results->mat[i][6] = te;
 	results->mat[i][7] = teta;
+	results->mat[i][8] = ir1;
+	results->mat[i][9] = ir2;
+	results->mat[i][10] = ir3;
 
 
 	// Partida com carga para acelerar a simula��o
 
-	Cr = 4.1;// Conjugado de carga nominal       = 4.1 Nm <<=======
+	Cr = 2.38;// Conjugado de carga nominal       = 4.1 Nm <<=======
 
 
   //  Cr=0.0;// Conjugado a vazio (desconectado) = 0.0 Nm <<=======
-  //  Cr=0.5;// Conjugado a vazio (conectado) = 0.5 Nm <<=======
+    //Cr=1;// Conjugado a vazio (conectado) = 0.5 Nm <<=======
 	for (i = 1; i < NiterG; i++)
 	{
 		for (j = 1; j <= Niter; j++)
@@ -445,6 +448,9 @@ int wmain()
 		results->mat[i][5] = isdef;
 		results->mat[i][6] = te;   // conjugado eletromagnetico
 		results->mat[i][7] = teta;
+		results->mat[i][8] = ir1;
+		results->mat[i][9] = ir2;
+		results->mat[i][10] = ir3;
 
 		if (_kbhit() && (_getch() == 27)) i = NiterG;
 
@@ -452,7 +458,7 @@ int wmain()
 
 	puts("acabou !");
 
-	for (l = 1; l < 8; l++) printf("%lf \n", x[l]);
+	for (l = 1; l < 11; l++) printf("%lf \n", x[l]);
 	printf("t= %lf\n", t);
 
 
@@ -460,7 +466,7 @@ int wmain()
 
 	for (i = 0; i < NiterG; i++)
 	{
-		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
+		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
 			results->mat[i][0],
 			results->mat[i][1],
 			results->mat[i][2],
@@ -468,7 +474,10 @@ int wmain()
 			results->mat[i][4],
 			results->mat[i][5],
 			results->mat[i][6],
-			results->mat[i][7]);
+			results->mat[i][7],
+			results->mat[i][8],
+			results->mat[i][9],
+			results->mat[i][10]);
 	}
 
 	fclose(fic);

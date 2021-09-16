@@ -121,7 +121,8 @@ void inv(matrice L, matrice inv_L)
 {
     int i, j;
     double r, pivot;
-    static double det = 0;
+    double det = 0;
+    //static double det = 0;
     int ligcour, ligpivot;
 
     for (i = 1; i < rang; i++)
