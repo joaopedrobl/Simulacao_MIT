@@ -11,8 +11,8 @@
 
 #define pi     3.14159265358979323846
 #define NiterG 300000    //130000;4000;300000(com conversor) /* N�mero total de pontos da simula��o */
-#define Niter  10       //20 ;200;40(com conversor)         /* N�mero loops antes de pegar um  ponto */
-#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simula��o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
+#define Niter  40       //20 ;200;40(com conversor)         /* N�mero loops antes de pegar um  ponto */
+#define dt     0.000001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simula��o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tens�o m�xima nos bornes da carga*/
 
 int i, j;
@@ -40,7 +40,7 @@ const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
 const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
 const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
 //const double p = 1.0;           /*  N�mero de pares de p�los   */
-const double p = 1.0;           /*  N�mero de pares de p�los   */
+const double p = 2.0;           /*  N�mero de pares de p�los   */
 const double Jt = 0.023976 * 1.;  /*  Momento de In�rcia   */
 const double fv = 1. * 0.0014439; /*  coeficiente de atrito din�mico   */
 
@@ -51,14 +51,14 @@ const double rs = 1.5; /* Resitencia do estator */
 const double Ls1 = 0.007; /* Indutância de dispersão do estator */
 
 const double nb = 3; /* Número de barras do rotor */
-const double Rb = 0.000096940036;  /*  resistência das barras   */
-const double Re = 0.000005;	/* resistencia do endring */
-const double Lb = 0.00000028 * 1000000; /* Auto indutância da barra do rotor */
-const double Le = 0.000000036 * 1000000; /* Auto indutância do endring */
+const double Rb = 0.000096940036 ; /*  resistência das barras   */
+const double Re = 0.000005 ;	/* resistencia do endring */
+const double Lb = 0.00000028 ; /* Auto indutância da barra do rotor */
+const double Le = 0.000000036; /* Auto indutância do endring */
 
-const double r = 0.070; /* Raio medio do entreferro */
-const double g = 0.00028; /* Entreferro */
-const double l = 0.120; /* Comprimento efetivo do rotor */
+const double r = 0.070 ; /* Raio medio do entreferro */
+const double g = 0.00028 ; /* Entreferro */
+const double l = 0.120 ; /* Comprimento efetivo do rotor */
 
 const double mu  = 0.00000125663;
 
@@ -120,7 +120,9 @@ void calcul_de_R(void)
 	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
 
 	R[1][1] = R[2][2] = R[3][3] = rs;
+	//R[1][1] = R[2][2] = R[3][3] = Rs;
 	R[4][4] = R[5][5] = R[6][6] = 2*(Rb + Re);
+	//R[4][4] = R[5][5] = R[6][6] = Rr;
 	R[1][2] = R[1][3] = R[1][7] = R[1][8] = R[1][9] = 0.0;
 	R[2][1] = R[2][3] = R[2][7] = R[2][8] = R[2][9] = 0.0;
 	R[3][1] = R[3][2] = R[3][7] = R[3][8] = R[3][9] = 0.0;
@@ -128,31 +130,32 @@ void calcul_de_R(void)
 	R[5][8] = R[5][9] = 0.0;
 	R[6][8] = R[6][9] = 0.0;
 	R[7][1] = R[7][2] = R[7][3] = R[7][8] = R[7][9] = 0.0;
-	R[8][1] = R[8][2] = R[8][3] = R[8][4] = R[8][9] = 0.0;
+	R[8][1] = R[8][2] = R[8][3] = R[8][7] = R[8][9] = 0.0;
 	R[9][1] = R[9][2] = R[9][3] = R[9][4] = R[9][5] = R[9][6] = R[9][7] = R[9][9] = 0.0;
 
 	R[1][4] = R[4][1] = c * sin(p*(teta));
-	R[1][5] = R[5][1] = c * sin(p*(teta-2*pi/3));
-	R[1][6] = R[6][1] = c * sin(p*(teta+2*pi/3.0));
+	R[1][5] = R[5][1] = c * sin(p*teta+2*pi/3);
+	R[1][6] = R[6][1] = c * sin(p*teta-2*pi/3.0);
 
-	R[2][4] = R[4][2] = c * sin(p * (teta + 2 * pi / 3.0));
-	R[2][5] = R[5][2] = c * sin(p * (teta));
-	R[2][6] = R[6][2] = c * sin(p * (teta - 2 * pi / 3));
+	R[2][4] = R[4][2] = c * sin(p * teta - 2 * pi / 3.0);
+	R[2][5] = R[5][2] = c * sin(p * teta);
+	R[2][6] = R[6][2] = c * sin(p * teta + 2 * pi / 3);
 
-	R[3][4] = R[4][3] = c * sin(p * (teta - 2 * pi / 3));
-	R[3][5] = R[5][3] = c * sin(p * (teta + 2 * pi / 3.0));
-	R[3][6] = R[6][3] = c * sin(p * (teta));
+	R[3][4] = R[4][3] = c * sin(p * teta + 2 * pi / 3);
+	R[3][5] = R[5][3] = c * sin(p * teta - 2 * pi / 3.0);
+	R[3][6] = R[6][3] = c * sin(p * teta);
 
 	R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = -Rb;
+	//R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = 0;
 	R[7][4] = R[7][5] = R[7][6] = R[4][7] = R[5][7] = R[6][7] = -Re;
 	
-	//R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
-	//R[8][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
-	//R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
+	R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
+	R[8][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
+	R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
 
-	R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
+	/*R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
 	R[8][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
-	R[8][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+	R[8][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);*/
 
 	R[7][7] = nb*Re;
 	R[8][8] = fv;
@@ -173,17 +176,17 @@ void calcul_de_L(void)
 	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
 	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 
-	L[1][4] = L[4][1] = Lsr * cos(p * (teta));
-	L[1][5] = L[5][1] = Lsr * cos(p * (teta - 2 * pi / 3));
-	L[1][6] = L[6][1] = Lsr * cos(p * (teta + 2 * pi / 3.0));
+	L[1][4] = L[4][1] = Lsr * cos(p * teta);
+	L[1][5] = L[5][1] = Lsr * cos(p *teta + 2 * pi / 3);
+	L[1][6] = L[6][1] = Lsr * cos(p * teta - 2 * pi / 3.0);
 
-	L[2][4] = L[4][2] = Lsr * cos(p * (teta + 2 * pi / 3.0));
-	L[2][5] = L[5][2] = Lsr * cos(p * (teta));
-	L[2][6] = L[6][2] = Lsr * cos(p * (teta - 2 * pi / 3));
+	L[2][4] = L[4][2] = Lsr * cos(p * teta - 2 * pi / 3.0);
+	L[2][5] = L[5][2] = Lsr * cos(p * teta);
+	L[2][6] = L[6][2] = Lsr * cos(p * teta + 2 * pi / 3);
 
-	L[3][4] = L[4][3] = Lsr * cos(p * (teta - 2 * pi / 3));
-	L[3][5] = L[5][3] = Lsr * cos(p * (teta + 2 * pi / 3.0));
-	L[3][6] = L[6][3] = Lsr * cos(p * (teta));
+	L[3][4] = L[4][3] = Lsr * cos(p * teta + 2 * pi / 3);
+	L[3][5] = L[5][3] = Lsr * cos(p * teta - 2 * pi / 3.0);
+	L[3][6] = L[6][3] = Lsr * cos(p * teta);
 
 
 	L[4][4] = L[5][5] = L[6][6] = Lkk + 2*(Le + Lb);
@@ -201,7 +204,7 @@ void calcul_de_L(void)
 	L[1][9] = L[2][9] = L[3][9] = L[4][9] = L[5][9] = L[6][9] = L[7][9] = 0;
 	L[7][4] = L[7][5] = L[7][6] = L[4][7] = L[5][7] = L[6][7] = -Le;
 
-	L[7][7] = 3*Le;
+	L[7][7] = nb*Le;
 	L[8][8] = Jt;
 	L[9][9] = 1.0;
 
@@ -211,12 +214,12 @@ void calcul_de_L(void)
 void calcul_de_U(void)
 {
 	double v1, v3, v5, v7, vdc, vdc2, fs;
-	fs = 60.0;
+	fs = 50.0;
 	oms = 2 * pi * fs;
 
 	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
 
 	vsdef = 0.0;
 
@@ -393,8 +396,8 @@ void mas()
 int wmain()
 {
 
-	Lms = (Ns/(2 * p))* (Ns / (2 * p)) * ((pi * mu * l * r) / g);
-	Lsr = 4/pi * Lms/Ns *sin(p*pi/3);
+	Lms = (Ns / (2 * p)) * (Ns / (2 * p)) * ((pi * mu * l * r) / g);
+	Lsr = 4 / pi * Lms / Ns * sin(p * pi / 3);
 
 
 	init();    /* x est rempli � 0 */
@@ -427,8 +430,8 @@ int wmain()
 
 	// Partida com carga para acelerar a simula��o
 
-	Cr = 2.38;// Conjugado de carga nominal       = 4.1 Nm <<=======
-
+	//Cr = 2.38;// Conjugado de carga nominal       = 4.1 Nm <<=======
+	Cr = 1;
 
   //  Cr=0.0;// Conjugado a vazio (desconectado) = 0.0 Nm <<=======
     //Cr=1;// Conjugado a vazio (conectado) = 0.5 Nm <<=======
