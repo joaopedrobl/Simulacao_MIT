@@ -11,8 +11,8 @@
 
 #define pi     3.14159265358979323846
 #define NiterG 300000    //130000;4000;300000(com conversor) /* Número total de pontos da simulação */
-#define Niter  10       //20 ;200;40(com conversor)         /* Número loops antes de pegar um  ponto */
-#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulação dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
+#define Niter  40       //20 ;200;40(com conversor)         /* Número loops antes de pegar um  ponto */
+#define dt     0.000001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulação dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tensão máxima nos bornes da carga*/
 
 int i, j;
@@ -36,6 +36,8 @@ const double Lsr = 0.4506;      /*  Indutância mútua estator-rotor  Msr */
 const double Rr = 8.9;           /*  resistência do rotor   */
 const double Llr = 0.0383;      /*  Indutância de dispersão do rotor  lrl */
 const double Lmr = 0.4506;      /*  Indutância principal do rotor  Lrp */
+const double Lsc = 1.5*Lms+Lls; /*  Indutância cíclica do estator   */
+const double Lrc = 1.5*Lmr+Llr; /*  Indutância cíclica do rotor   */
 //const double Lsc = 1.5*Lsp+lsl; /*  Indutância cíclica do estator   */
 //const double Lrc = 1.5*Lrp+lrl; /*  Indutância cíclica do rotor   */
 //const double p = 1.0;           /*  Número de pares de pólos   */
@@ -108,12 +110,18 @@ void calcul_de_R(void)
 	R[6][4] = R[6][5] = R[6][7] = R[6][8] = 0.0;
 	R[7][1] = R[7][2] = R[7][3] = R[7][8] = 0.0;
 	R[8][1] = R[8][2] = R[8][3] = R[8][4] = R[8][5] = R[8][6] = R[8][8] = 0.0;
+	//R[1][4] = R[2][5] = R[3][6] = R[4][1] = R[5][2] = R[6][3] = c * sinteta;
+	//R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_neg;
+	//R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_pos;
+	//R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
+	//R[7][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
+	//R[7][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
 	R[1][4] = R[2][5] = R[3][6] = R[4][1] = R[5][2] = R[6][3] = c * sinteta;
-	R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_neg;
-	R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_pos;
+	R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_pos;
+	R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_neg;
 	R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
-	R[7][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
-	R[7][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+	R[7][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
+	R[7][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
 	R[7][7] = fv;
 	R[8][7] = -1.0;
 }
@@ -128,13 +136,17 @@ void calcul_de_L(void)
 	costeta_neg = cos(p * teta - 2.0 * pi / 3.0);
 	costeta_pos = cos(p * teta + 2.0 * pi / 3.0);
 
-	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
-	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
+	/*L[1][1] = L[2][2] = L[3][3] = Lls + Lms;*/
+	L[1][1] = L[2][2] = L[3][3] = Lsc;
+	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
+	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 	L[1][4] = L[2][5] = L[3][6] = L[4][1] = L[5][2] = L[6][3] = Lsr * costeta;
-	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_neg;
-	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_pos;
-	L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
-	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;
+	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_pos;
+	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_neg;
+	//L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
+	L[4][4] = L[5][5] = L[6][6] = Lrc;
+	/*L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;*/
+	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = 0;
 	L[7][1] = L[7][2] = L[7][3] = L[7][4] = L[7][5] = L[7][6] = L[7][8] = 0.0;
 	L[8][1] = L[8][2] = L[8][3] = L[8][4] = L[8][5] = L[8][6] = L[8][7] = 0.0;
 	L[1][7] = L[2][7] = L[3][7] = L[4][7] = L[5][7] = L[6][7] = 0.0;
