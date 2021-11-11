@@ -131,12 +131,12 @@ void inv(matrice L, matrice inv_L)
     for (ligcour = 1; ligcour < rang; ligcour++)
     {
         ligpivot = ligcour;
-        while ((fabs(L[ligpivot][ligcour]) < 1.0e-12) && (ligpivot < 20))
+        while ((fabs(L[ligpivot][ligcour]) < 1.0e-6) && (ligpivot < 20))
         {
             ligpivot++;
             det = -det;
         }
-        if ((fabs(L[ligpivot][ligcour]) < 1.0e-12) && (ligpivot == 20))
+        if ((fabs(L[ligpivot][ligcour]) < 1.0e-6) && (ligpivot == 20))
             det = 0;
         else
         {

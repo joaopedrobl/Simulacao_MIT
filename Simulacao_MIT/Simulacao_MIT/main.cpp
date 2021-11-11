@@ -41,7 +41,7 @@ const double Lrc = 1.5*Lmr+Llr; /*  Indutância cíclica do rotor   */
 //const double Lsc = 1.5*Lsp+lsl; /*  Indutância cíclica do estator   */
 //const double Lrc = 1.5*Lrp+lrl; /*  Indutância cíclica do rotor   */
 //const double p = 1.0;           /*  Número de pares de pólos   */
-const double p = 1.0;           /*  Número de pares de pólos   */
+const double p = 2.0;           /*  Número de pares de pólos   */
 const double Jt = 0.023976 * 1.;  /*  Momento de Inércia   */
 const double fv = 1. * 0.0014439; /*  coeficiente de atrito dinâmico   */
 
@@ -133,20 +133,20 @@ void calcul_de_L(void)
 	double costeta_pos;
 
 	costeta = cos(p * teta);
-	costeta_neg = cos(p * teta - 2.0 * pi / 3.0);
-	costeta_pos = cos(p * teta + 2.0 * pi / 3.0);
+	costeta_neg = cos(p * teta - (2.0 * pi) / 3.0);
+	costeta_pos = cos(p * teta + (2.0 * pi) / 3.0);
 
-	/*L[1][1] = L[2][2] = L[3][3] = Lls + Lms;*/
-	L[1][1] = L[2][2] = L[3][3] = Lsc;
-	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
-	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
+	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
+	//L[1][1] = L[2][2] = L[3][3] = Lsc;
+	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
+	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 	L[1][4] = L[2][5] = L[3][6] = L[4][1] = L[5][2] = L[6][3] = Lsr * costeta;
 	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_pos;
 	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_neg;
-	//L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
-	L[4][4] = L[5][5] = L[6][6] = Lrc;
-	/*L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;*/
-	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = 0;
+	L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
+	//L[4][4] = L[5][5] = L[6][6] = Lrc;
+	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;
+	//L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = 0;
 	L[7][1] = L[7][2] = L[7][3] = L[7][4] = L[7][5] = L[7][6] = L[7][8] = 0.0;
 	L[8][1] = L[8][2] = L[8][3] = L[8][4] = L[8][5] = L[8][6] = L[8][7] = 0.0;
 	L[1][7] = L[2][7] = L[3][7] = L[4][7] = L[5][7] = L[6][7] = 0.0;
@@ -184,19 +184,29 @@ void calcul_de_U(void)
 
 void calcul_vecteur(double d[rang], double c[rang])
 {
-	// As funções de inversão, multiplicação e subtração de matrizes estão no programa routines
-	calcul_de_L();          /* Calcula-se a matriz L */
+	//// As funções de inversão, multiplicação e subtração de matrizes estão no programa routines
+	//calcul_de_L();          /* Calcula-se a matriz L */
 
-	calcul_de_R();          /* Matriz R */
+	//calcul_de_R();          /* Matriz R */
 
-	inv(L, inv_L);  /* Inversão de L */
+	//inv(L, inv_L);  /* Inversão de L */
 
-	// Método do Pivô de Gauss (foi usado aqui pq é mais rápido)
+	//// Método do Pivô de Gauss (foi usado aqui pq é mais rápido)
 
-	multmat_mat(inv_L, R, A);
-	multmat_vect(A, d, Ad);  // A * x
-	multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
-	sousvect_vect(BU, Ad, c);
+	//multmat_mat(inv_L, R, A);
+	//multmat_vect(A, d, Ad);  // A * x
+	//multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
+	//sousvect_vect(BU, Ad, c);
+
+	calcul_de_L();
+	calcul_de_R();
+	multmat_vect(R, d, BU);
+	sousvect_vect(U, BU, BU);
+	inv(L, inv_L);
+	multmat_vect(inv_L, BU, c);
+
+
+
 }
 
 // Inicialização das Variáveis
@@ -206,14 +216,14 @@ void init()
 	int l, c;
 
 	for (l = 0; l < rang; l++) x[l] = 0;
-	for (l = 0; l < 8; l++)               // Inicializa-se R com 0
-		for (c = 0; c < 8; c++)
-			R[l][c] = 0.0;
+	//for (l = 0; l < 8; l++)               // Inicializa-se R com 0
+	//	for (c = 0; c < 8; c++)
+	//		R[l][c] = 0.0;
 	for (l = 0; l < rang; l++)             // Inicializa-se b e A com 0
 		for (c = 0; c < rang; c++)
 		{
-			b[l][c] = 0.0;
-			A[l][c] = 0.0;
+			R[l][c] = 0.0;
+			L[l][c] = 0.0;
 		}
 
 	t = 0.0;
@@ -235,7 +245,7 @@ void init()
 // Método Runge-kutta
 void mas()
 {
-	vecteur Y0, dx, Y1, Y2, Y3, Y4, tempo, K1, K2, K3, K4, tempo_2, tempo_3;
+	/*vecteur Y0, dx, Y1, Y2, Y3, Y4, tempo, K1, K2, K3, K4, tempo_2, tempo_3;
 	int l;
 
 	calcul_de_U();
@@ -268,6 +278,47 @@ void mas()
 	addvect_vect(tempo, tempo_2, tempo_3);
 
 	multvect_const(tempo_3, 1 / 6.0, dx);
+	addvect_vect(x, dx, tempo);
+
+	for (l = 1; l < rang; l++) x[l] = tempo[l];*/
+
+	vecteur Y0, dx, Y1, Y2, Y3, tempo;
+	int l;
+
+	calcul_de_U();
+
+	calcul_vecteur(x, Y0);
+	multvect_const(Y0, dt / 2.0, dx);
+	addvect_vect(x, dx, Y1);
+
+	calcul_vecteur(Y1, tempo);
+	for (l = 1; l < rang; l++) Y1[l] = tempo[l];
+	multvect_const(Y1, dt / 2.0, dx);
+	addvect_vect(x, dx, Y2);
+
+	calcul_vecteur(Y2, tempo);
+	for (l = 1; l < rang; l++) Y2[l] = tempo[l];
+	multvect_const(Y2, dt, dx);
+	addvect_vect(x, dx, Y3);
+
+	calcul_vecteur(Y3, tempo);
+	for (l = 1; l < rang; l++) Y3[l] = tempo[l];
+
+	multvect_const(Y1, 2.0, tempo);
+	for (l = 1; l < rang; l++) Y1[l] = tempo[l];
+
+	multvect_const(Y2, 2.0, tempo);
+	for (l = 1; l < rang; l++) Y2[l] = tempo[l];
+	for (l = 1; l < rang; l++) dx[l] = Y0[l];
+	addvect_vect(dx, Y1, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
+	addvect_vect(dx, Y2, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
+	addvect_vect(dx, Y3, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
+
+	multvect_const(dx, dt / 6.0, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
 	addvect_vect(x, dx, tempo);
 
 	for (l = 1; l < rang; l++) x[l] = tempo[l];
