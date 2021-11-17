@@ -110,18 +110,18 @@ void calcul_de_R(void)
 	R[6][4] = R[6][5] = R[6][7] = R[6][8] = 0.0;
 	R[7][1] = R[7][2] = R[7][3] = R[7][8] = 0.0;
 	R[8][1] = R[8][2] = R[8][3] = R[8][4] = R[8][5] = R[8][6] = R[8][8] = 0.0;
-	//R[1][4] = R[2][5] = R[3][6] = R[4][1] = R[5][2] = R[6][3] = c * sinteta;
-	//R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_neg;
-	//R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_pos;
-	//R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
-	//R[7][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
-	//R[7][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
 	R[1][4] = R[2][5] = R[3][6] = R[4][1] = R[5][2] = R[6][3] = c * sinteta;
-	R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_pos;
-	R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_neg;
-	R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
-	R[7][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
-	R[7][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
+	R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_neg;
+	R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_pos;
+	R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
+	R[7][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
+	R[7][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);
+	//R[1][4] = R[2][5] = R[3][6] = R[4][1] = R[5][2] = R[6][3] = c * sinteta;
+	//R[1][5] = R[2][6] = R[3][4] = R[4][3] = R[5][1] = R[6][2] = c * sinteta_pos;
+	//R[1][6] = R[2][4] = R[3][5] = R[4][2] = R[5][3] = R[6][1] = c * sinteta_neg;
+	//R[7][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
+	//R[7][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
+	//R[7][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
 	R[7][7] = fv;
 	R[8][7] = -1.0;
 }
@@ -141,8 +141,8 @@ void calcul_de_L(void)
 	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -1.0 / 2.0 * Lms;
 	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 	L[1][4] = L[2][5] = L[3][6] = L[4][1] = L[5][2] = L[6][3] = Lsr * costeta;
-	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_pos;
-	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_neg;
+	L[1][5] = L[2][6] = L[3][4] = L[4][3] = L[5][1] = L[6][2] = Lsr * costeta_neg;
+	L[1][6] = L[2][4] = L[3][5] = L[4][2] = L[5][3] = L[6][1] = Lsr * costeta_pos;
 	L[4][4] = L[5][5] = L[6][6] = Llr + Lmr;
 	//L[4][4] = L[5][5] = L[6][6] = Lrc;
 	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = -1.0 / 2.0 * Lmr;
@@ -164,8 +164,8 @@ void calcul_de_U(void)
 	oms = 2 * pi * fs;
 
 	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
 
 	vsdef = 0.0;
 
