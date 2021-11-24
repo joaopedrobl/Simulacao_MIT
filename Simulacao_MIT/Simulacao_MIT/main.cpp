@@ -50,7 +50,7 @@ const double Ns = 156; /* Número de voltas da bobina do estator */
 const double rs = 1.5; /* Resitencia do estator */
 const double Ls1 = 0.007; /* Indutância de dispersão do estator */
 
-const double nb = 3; /* Número de barras do rotor */
+const double nb = 6; /* Número de barras do rotor */
 const double Rb = 0.000096940036 ; /*  resistência das barras   */
 const double Re = 0.000005 ;	/* resistencia do endring */
 const double Lb = 0.00000028 ; /* Auto indutância da barra do rotor */
@@ -95,6 +95,10 @@ double vsdef, isdef, vl13, vl15, vl42, vl62, vx, ix, zx;
 double vsa_charge1, vsa_charge2, vsa_charge3, vn1, vn1n2;
 double vsa_charge4, vsa_charge5, vsa_charge6, vn2;
 double ps_alim, ps_mot;
+
+double Xa1, Xa2, Xa3, Xa4, Xa5, Xa6;
+double Xb1, Xb2, Xb3, Xb4, Xb5, Xb6;
+double Xc1, Xc2, Xc3, Xc4, Xc5, Xc6;
 
 matrice L, dL, A, b, inv_L, B, R;
 vecteur x, U, BU, Ad;
@@ -168,45 +172,59 @@ void calcul_de_L(void)
 	double costeta_neg;
 	double costeta_pos;
 	double Lkk;
+	double Ld, Lt, Lki;
 
-	Lkk = (mu*l*r/g)*(1-(2*pi/3)/(2*pi))*(2*pi/3);
+	Lkk = (mu*l*r/g)*(1-(pi/3)/(2*pi))*(pi/3);
+	Ld = Lkk + 2 * (Le + Lb);
+	Lki = -((mu * l * r) / g) * (((pi / 3) * (pi / 3)) / (2 * pi));
+	Lt = Lki - Lb;
 
 	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
-	//L[1][1] = L[2][2] = L[3][3] = Lsc;
 	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
-	//L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = 0;
 
-	L[1][4] = L[4][1] = Lsr * cos(p * teta);
-	L[1][5] = L[5][1] = Lsr * cos(p *teta + 2 * pi / 3);
-	L[1][6] = L[6][1] = Lsr * cos(p * teta - 2 * pi / 3.0);
+	L[1][4] = L[4][1] = Lsr * cos(Xa1);
+	L[1][5] = L[5][1] = Lsr * cos(Xa2);
+	L[1][6] = L[6][1] = Lsr * cos(Xa3);
+	L[1][7] = L[7][1] = Lsr * cos(Xa4);
+	L[1][8] = L[8][1] = Lsr * cos(Xa5);
+	L[1][9] = L[9][1] = Lsr * cos(Xa6);
 
-	L[2][4] = L[4][2] = Lsr * cos(p * teta - 2 * pi / 3.0);
-	L[2][5] = L[5][2] = Lsr * cos(p * teta);
-	L[2][6] = L[6][2] = Lsr * cos(p * teta + 2 * pi / 3);
+	L[2][4] = L[4][2] = Lsr * cos(Xb1);
+	L[2][5] = L[5][2] = Lsr * cos(Xb2);
+	L[2][6] = L[6][2] = Lsr * cos(Xb3);
+	L[2][7] = L[7][2] = Lsr * cos(Xb4);
+	L[2][8] = L[8][2] = Lsr * cos(Xb5);
+	L[2][9] = L[9][2] = Lsr * cos(Xb6);
 
-	L[3][4] = L[4][3] = Lsr * cos(p * teta + 2 * pi / 3);
-	L[3][5] = L[5][3] = Lsr * cos(p * teta - 2 * pi / 3.0);
-	L[3][6] = L[6][3] = Lsr * cos(p * teta);
+	L[3][4] = L[4][3] = Lsr * cos(Xc1);
+	L[3][5] = L[5][3] = Lsr * cos(Xc2);
+	L[3][6] = L[6][3] = Lsr * cos(Xc3);
+	L[3][7] = L[7][3] = Lsr * cos(Xc4);
+	L[3][8] = L[8][3] = Lsr * cos(Xc5);
+	L[3][9] = L[9][3] = Lsr * cos(Xc6);
+
+	L[4][4] = L[5][5] = L[6][6] = L[7][7] = L[8][8] = L[9][9] = Ld;
+
+	L[4][5] = L[4][9] = L[5][4] = L[5][6] = L[6][5] = L[6][7] = L[7][6] = L[7][8] = L[8][7] = L[8][9] = L[9][4] = L[9][8] = Lt;
+
+	L[4][6] = L[4][7] = L[4][8] = L[5][7] = L[5][8] = L[5][9] = L[6][4] = L[6][8] = L[6][9] = L[7][4] = L[7][5] = L[7][9] = L[8][4] = L[8][5] = L[8][6] = L[9][5] = L[9][6] = L[9][7] = Lki;
+
+	L[4][10] = L[5][10] = L[6][10] = L[7][10] = L[8][10] = L[9][10] = -Le;
+	L[10][4] = L[10][5] = L[10][6] = L[10][7] = L[10][8] = L[10][9] = -Le;
+
+	L[10][1] = L[10][2] = L[10][3] = L[11][1] = L[11][2] = L[11][3] = L[12][1] = L[12][2] = L[12][3] = 0.0;
+
+	L[11][4] = L[11][5] = L[11][6] = L[11][7] = L[11][8] = L[11][9] = L[11][10] = 0.0;
+	L[12][4] = L[12][5] = L[12][6] = L[12][7] = L[12][8] = L[12][9] = L[12][10] = 0.0;
+	L[10][10] = nb*Le;
+
+	L[1][10] = L[2][10] = L[3][10] = 0;
+	L[1][11] = L[2][11] = L[3][11] = L[4][11] = L[5][11] = L[6][11] = L[7][11] = L[8][11] = L[9][11] = L[10][11] = L[12][11] = 0;
+	L[1][12] = L[2][12] = L[3][12] = L[4][12] = L[5][12] = L[6][12] = L[7][12] = L[8][12] = L[9][12] = L[10][12] = L[11][12] = 0;
 
 
-	L[4][4] = L[5][5] = L[6][6] = Lkk + 2*(Le + Lb);
-	//L[4][4] = L[5][5] = L[6][6] = Lrc;
-	L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = (-0.5 * Lkk) - Lb;
-	//L[4][5] = L[4][6] = L[5][4] = L[5][6] = L[6][4] = L[6][5] = 0;
-
-	L[7][1] = L[7][2] = L[7][3] = L[8][1] = L[8][2] = L[8][3] = L[9][1] = L[9][2] = L[9][3] = 0.0;
-
-	L[8][4] = L[8][5] = L[8][6] = L[8][7] = L[8][9] = 0.0;
-	L[9][4] = L[9][5] = L[9][6] = L[9][7] = L[9][8] = 0.0;
-
-	L[1][7] = L[2][7] = L[3][7] = 0;
-	L[1][8] = L[2][8] = L[3][8] = L[4][8] = L[5][8] = L[6][8] = L[7][8] = 0;
-	L[1][9] = L[2][9] = L[3][9] = L[4][9] = L[5][9] = L[6][9] = L[7][9] = 0;
-	L[7][4] = L[7][5] = L[7][6] = L[4][7] = L[5][7] = L[6][7] = -Le;
-
-	L[7][7] = nb*Le;
-	L[8][8] = Jt;
-	L[9][9] = 1.0;
+	L[11][11] = Jt;
+	L[12][12] = 1.0;
 
 }
 
