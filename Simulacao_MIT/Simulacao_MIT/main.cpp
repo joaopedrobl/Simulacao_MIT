@@ -99,6 +99,7 @@ double ps_alim, ps_mot;
 double Xa1, Xa2, Xa3, Xa4, Xa5, Xa6;
 double Xb1, Xb2, Xb3, Xb4, Xb5, Xb6;
 double Xc1, Xc2, Xc3, Xc4, Xc5, Xc6;
+double K1, K2, K3, K4, K5, K6;
 
 matrice L, dL, A, b, inv_L, B, R;
 vecteur x, U, BU, Ad;
@@ -123,47 +124,59 @@ void calcul_de_R(void)
 	sinteta_pos = sin(p * teta + 2.0 * pi / 3.0);
 	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
 
+	K1 = Lsr * p * (x[1] * sin(Xa1) + x[2] * sin(Xb1) + x[3] * sin(Xc1));
+	K2 = Lsr * p * (x[1] * sin(Xa2) + x[2] * sin(Xb2) + x[3] * sin(Xc2));
+	K3 = Lsr * p * (x[1] * sin(Xa3) + x[2] * sin(Xb3) + x[3] * sin(Xc3));
+	K4 = Lsr * p * (x[1] * sin(Xa4) + x[2] * sin(Xb4) + x[3] * sin(Xc4));
+	K5 = Lsr * p * (x[1] * sin(Xa5) + x[2] * sin(Xb5) + x[3] * sin(Xc5));
+	K6 = Lsr * p * (x[1] * sin(Xa6) + x[2] * sin(Xb6) + x[3] * sin(Xc6));
+
+	
 	R[1][1] = R[2][2] = R[3][3] = rs;
-	//R[1][1] = R[2][2] = R[3][3] = Rs;
-	R[4][4] = R[5][5] = R[6][6] = 2*(Rb + Re);
-	//R[4][4] = R[5][5] = R[6][6] = Rr;
-	R[1][2] = R[1][3] = R[1][7] = R[1][8] = R[1][9] = 0.0;
-	R[2][1] = R[2][3] = R[2][7] = R[2][8] = R[2][9] = 0.0;
-	R[3][1] = R[3][2] = R[3][7] = R[3][8] = R[3][9] = 0.0;
-	R[4][8] = R[4][9] = 0.0;
-	R[5][8] = R[5][9] = 0.0;
-	R[6][8] = R[6][9] = 0.0;
-	R[7][1] = R[7][2] = R[7][3] = R[7][8] = R[7][9] = 0.0;
-	R[8][1] = R[8][2] = R[8][3] = R[8][7] = R[8][9] = 0.0;
-	R[9][1] = R[9][2] = R[9][3] = R[9][4] = R[9][5] = R[9][6] = R[9][7] = R[9][9] = 0.0;
+
+	R[4][4] = R[5][5] = R[6][6] = R[7][7] = R[8][8] = R[9][9] = 2*(Rb + Re);
+
 
 	R[1][4] = R[4][1] = c * sin(p*(teta));
 	R[1][5] = R[5][1] = c * sin(p*teta+2*pi/3);
 	R[1][6] = R[6][1] = c * sin(p*teta-2*pi/3.0);
 
-	R[2][4] = R[4][2] = c * sin(p * teta - 2 * pi / 3.0);
-	R[2][5] = R[5][2] = c * sin(p * teta);
-	R[2][6] = R[6][2] = c * sin(p * teta + 2 * pi / 3);
+	R[1][4] = R[4][1] = c * sin(Xa1);
+	R[1][5] = R[5][1] = c * sin(Xa2);
+	R[1][6] = R[6][1] = c * sin(Xa3);
+	R[1][7] = R[7][1] = c * sin(Xa4);
+	R[1][8] = R[8][1] = c * sin(Xa5);
+	R[1][9] = R[9][1] = c * sin(Xa6);
 
-	R[3][4] = R[4][3] = c * sin(p * teta + 2 * pi / 3);
-	R[3][5] = R[5][3] = c * sin(p * teta - 2 * pi / 3.0);
-	R[3][6] = R[6][3] = c * sin(p * teta);
+	R[2][4] = R[4][2] = c * sin(Xb1);
+	R[2][5] = R[5][2] = c * sin(Xb2);
+	R[2][6] = R[6][2] = c * sin(Xb3);
+	R[2][7] = R[7][2] = c * sin(Xb4);
+	R[2][8] = R[8][2] = c * sin(Xb5);
+	R[2][9] = R[9][2] = c * sin(Xb6);
 
-	R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = -Rb;
-	//R[4][5] = R[4][6] = R[5][4] = R[5][6] = R[6][4] = R[6][5] = 0;
-	R[7][4] = R[7][5] = R[7][6] = R[4][7] = R[5][7] = R[6][7] = -Re;
-	
-	R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_neg + x[3] * sinteta_pos);
-	R[8][5] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta + x[3] * sinteta_neg);
-	R[8][6] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta_pos + x[3] * sinteta);
+	R[3][4] = R[4][3] = c * sin(Xc1);
+	R[3][5] = R[5][3] = c * sin(Xc2);
+	R[3][6] = R[6][3] = c * sin(Xc3);
+	R[3][7] = R[7][3] = c * sin(Xc4);
+	R[3][8] = R[8][3] = c * sin(Xc5);
+	R[3][9] = R[9][3] = c * sin(Xc6);
 
-	/*R[8][4] = Lsr * p * (x[1] * sinteta + x[2] * sinteta_pos + x[3] * sinteta_neg);
-	R[8][5] = Lsr * p * (x[1] * sinteta_neg + x[2] * sinteta + x[3] * sinteta_pos);
-	R[8][6] = Lsr * p * (x[1] * sinteta_pos + x[2] * sinteta_neg + x[3] * sinteta);*/
+	R[4][5] = R[4][9] = R[5][4] = R[5][6] = R[6][5] = R[6][7] = R[7][6] = R[7][8] = R[8][7] = R[8][9] = R[9][4] = R[9][8] = -Rb;
 
-	R[7][7] = nb*Re;
-	R[8][8] = fv;
-	R[9][8] = -1;
+	R[10][4] = R[10][5] = R[10][6] = R[10][7] = R[10][8] = R[10][9] = -Re;
+	R[4][10] = R[5][10] = R[6][10] = R[7][10] = R[8][10] = R[9][10] = -Re;
+	R[11][4] = K1;
+	R[11][5] = K2;
+	R[11][6] = K3;
+	R[11][7] = K4;
+	R[11][8] = K5;
+	R[11][9] = K6;
+
+
+	R[10][10] = nb*Re;
+	R[11][11] = fv;
+	R[12][11] = -1;
 }
 
 void calcul_de_L(void)
