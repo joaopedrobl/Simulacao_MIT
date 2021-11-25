@@ -85,7 +85,7 @@ const double mu  = 0.00000125663;
 
 // **********************************************************************
 
-double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ir1, ir2, ir3, ire, t, om, te, Rbf;
+double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ir1, ir2, ir3, ir4, ir5, ir6, ire, t, om, te, Rbf;
 
 /* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
 
@@ -111,6 +111,31 @@ matrice u, v, inva;
 FILE* fichier;
 
 matrix* results;
+
+void init_angles(void) 
+{
+
+	Xa1 = p * (teta + (pi / 6));
+	Xa2 = p * (teta + (pi / 3) + (pi / 6));
+	Xa3 = p * (teta + 2 * (pi / 3) + (pi / 6));
+	Xa4 = p * (teta + 3 * (pi / 3) + (pi / 6));
+	Xa5 = p * (teta + 4 * (pi / 3) + (pi / 6));
+	Xa6 = p * (teta + 5 * (pi / 3) + (pi / 6));
+
+	Xb1 = p * (teta + (pi / 6)) - 2*pi/3;
+	Xb2 = p * (teta + (pi / 3) + (pi / 6)) - 2 * pi / 3;
+	Xb3 = p * (teta + 2 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+	Xb4 = p * (teta + 3 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+	Xb5 = p * (teta + 4 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+	Xb6 = p * (teta + 5 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+
+	Xc1 = p * (teta + (pi / 6)) + 2 * pi / 3;
+	Xc2 = p * (teta + (pi / 3) + (pi / 6)) + 2 * pi / 3;
+	Xc3 = p * (teta + 2 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+	Xc4 = p * (teta + 3 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+	Xc5 = p * (teta + 4 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+	Xc6 = p * (teta + 5 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+}
 
 void calcul_de_R(void)
 {
@@ -249,8 +274,8 @@ void calcul_de_U(void)
 	oms = 2 * pi * fs;
 
 	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	vb1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	vc1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
 
 	vsdef = 0.0;
 
@@ -258,10 +283,10 @@ void calcul_de_U(void)
 	U[1] = va1;
 	U[2] = vb1;
 	U[3] = vc1;
-	U[4] = U[5] = U[6] = 0.0;  // Tens�es Rot�ricas
-	U[7] = 0.0; // Tensão endring
-	U[8] = -Cr;            // Conjugado de Carga (resistente)
-	U[9] = 0.0;
+	U[4] = U[5] = U[6] = U[7] = U[8] = U[9] = 0.0;  // Tens�es Rot�ricas
+	U[10] = 0.0; // Tensão endring
+	U[11] = -Cr;            // Conjugado de Carga (resistente)
+	U[12] = 0.0;
 }
 
 
@@ -371,13 +396,16 @@ void mas()
 	ir1 = x[4];
 	ir2 = x[5];
 	ir3 = x[6];
-	ire = x[7];
-	om = x[8];
-	teta = x[9];
+	ir4 = x[7];
+	ir5 = x[8];
+	ir6 = x[9];
+	ire = x[10];
+	om = x[11];
+	teta = x[12];
 
 	/* C�lculo do conjugado duas formas equivalentes*/
 
-	te = -(R[8][4] * ir1 + R[8][5] * ir2 + R[8][6] * ir3);
+	te = -(R[11][4] * ir1 + R[11][5] * ir2 + R[11][6] * ir3 + R[11][7] * ir4 + R[11][8] * ir5 + R[11][9] * ir6);
 
 	// Para determina��o da tens�o entre os neutros
 	// C�lculo da tensao nos bornes da carga e tensao de neutro
