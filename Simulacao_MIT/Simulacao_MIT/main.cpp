@@ -40,7 +40,7 @@ const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
 const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
 const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
 //const double p = 1.0;           /*  N�mero de pares de p�los   */
-const double p = 2.0;           /*  N�mero de pares de p�los   */
+const double p = 1.0;           /*  N�mero de pares de p�los   */
 const double Jt = 0.023976 * 1.;  /*  Momento de In�rcia   */
 const double fv = 1. * 0.0014439; /*  coeficiente de atrito din�mico   */
 
@@ -323,8 +323,8 @@ void init()
 	int l, c;
 
 	for (l = 0; l < rang; l++) x[l] = 0;
-	for (l = 0; l < 8; l++)               // Inicializa-se R com 0
-		for (c = 0; c < 8; c++)
+	for (l = 0; l < rang; l++)               // Inicializa-se R com 0
+		for (c = 0; c < rang; c++)
 			R[l][c] = 0.0;
 	for (l = 0; l < rang; l++)             // Inicializa-se b e A com 0
 		for (c = 0; c < rang; c++)
@@ -456,7 +456,7 @@ int wmain()
 {
 
 	Lms = (Ns / (2 * p)) * (Ns / (2 * p)) * ((pi * mu * l * r) / g);
-	Lsr = 4 / pi * Lms / Ns * sin(p * pi / 3);
+	Lsr = 4 / pi * Lms / Ns * sin(p * pi / 6);
 
 
 	init();    /* x est rempli � 0 */
@@ -469,7 +469,7 @@ int wmain()
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	/* denomina��o do arquivo de sa�da */
 	//fic=fopen("s000c30c100bi11_30A.dat","w");
-	fic = fopen("joao_pedro.dat", "w");
+	fic = fopen("joao_pedro_6_barras.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 	results = mmake(NiterG, 11);
@@ -489,8 +489,8 @@ int wmain()
 
 	// Partida com carga para acelerar a simula��o
 
-	//Cr = 2.38;// Conjugado de carga nominal       = 4.1 Nm <<=======
-	Cr = 1;
+	Cr = 2.38;// Conjugado de carga nominal       = 4.1 Nm <<=======
+	//Cr = 1;
 
   //  Cr=0.0;// Conjugado a vazio (desconectado) = 0.0 Nm <<=======
     //Cr=1;// Conjugado a vazio (conectado) = 0.5 Nm <<=======
