@@ -10,9 +10,9 @@
 #include "routines.h"
 
 #define pi     3.14159265358979323846
-#define NiterG 300000    //130000;4000;300000(com conversor) /* Número total de pontos da simulação */
-#define Niter  40       //20 ;200;40(com conversor)         /* Número loops antes de pegar um  ponto */
-#define dt     0.000001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulação dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
+#define NiterG 100000    //130000;4000;300000(com conversor) /* Número total de pontos da simulação */
+#define Niter  10       //20 ;200;40(com conversor)         /* Número loops antes de pegar um  ponto */
+#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simulação dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tensão máxima nos bornes da carga*/
 
 int i, j;
