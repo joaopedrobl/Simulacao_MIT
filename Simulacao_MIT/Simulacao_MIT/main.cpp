@@ -10,9 +10,9 @@
 #include "routines.h"
 
 #define pi     3.14159265358979323846
-#define NiterG 300000    //130000;4000;300000(com conversor) /* N�mero total de pontos da simula��o */
-#define Niter  40       //20 ;200;40(com conversor)         /* N�mero loops antes de pegar um  ponto */
-#define dt     0.000001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simula��o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
+#define NiterG 100000    //130000;4000;300000(com conversor) /* N�mero total de pontos da simula��o */
+#define Niter  10       //20 ;200;40(com conversor)         /* N�mero loops antes de pegar um  ponto */
+#define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simula��o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tens�o m�xima nos bornes da carga*/
 
 int i, j;
@@ -40,7 +40,7 @@ const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
 const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
 const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
 //const double p = 1.0;           /*  N�mero de pares de p�los   */
-const double p = 1.0;           /*  N�mero de pares de p�los   */
+const double p = 2.0;           /*  N�mero de pares de p�los   */
 const double Jt = 0.023976 * 1.;  /*  Momento de In�rcia   */
 const double fv = 1. * 0.0014439; /*  coeficiente de atrito din�mico   */
 
@@ -274,8 +274,8 @@ void calcul_de_U(void)
 	oms = 2 * pi * fs;
 
 	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
 
 	vsdef = 0.0;
 
@@ -353,39 +353,80 @@ void init()
 // M�todo Runge-kutta
 void mas()
 {
-	vecteur Y0, dx, Y1, Y2, Y3, Y4, tempo, K1, K2, K3, K4, tempo_2, tempo_3;
+	//vecteur Y0, dx, Y1, Y2, Y3, Y4, tempo, K1, K2, K3, K4, tempo_2, tempo_3;
+	//int l;
+
+	//calcul_de_U();
+
+	//calcul_vecteur(x, Y0);
+	//multvect_const(Y0, dt, K1);
+	//multvect_const(K1, 0.5, dx);
+	//addvect_vect(x, dx, Y1);
+
+	//calcul_vecteur(Y1, tempo);
+	//multvect_const(tempo, dt, K2);
+	//multvect_const(K2, 0.5, dx);
+	//addvect_vect(x, dx, Y3);
+
+	//calcul_vecteur(Y3, tempo);
+	//multvect_const(tempo, dt, K3);
+	//addvect_vect(x, K3, Y4);
+
+	//calcul_vecteur(Y4, tempo);
+	//multvect_const(tempo, dt, K4);
+
+	//multvect_const(K2, 2, tempo);
+	//for (l = 1; l < rang; l++) K2[l] = tempo[l];
+
+	//multvect_const(K3, 2, tempo);
+	//for (l = 1; l < rang; l++) K3[l] = tempo[l];
+
+	//addvect_vect(K1, K2, tempo);
+	//addvect_vect(K3, K4, tempo_2);
+	//addvect_vect(tempo, tempo_2, tempo_3);
+
+	//multvect_const(tempo_3, 1 / 6.0, dx);
+	//addvect_vect(x, dx, tempo);
+
+	//for (l = 1; l < rang; l++) x[l] = tempo[l];
+
+	vecteur Y0, dx, Y1, Y2, Y3, tempo;
 	int l;
 
 	calcul_de_U();
 
 	calcul_vecteur(x, Y0);
-	multvect_const(Y0, dt, K1);
-	multvect_const(K1, 0.5, dx);
+	multvect_const(Y0, dt / 2.0, dx);
 	addvect_vect(x, dx, Y1);
 
 	calcul_vecteur(Y1, tempo);
-	multvect_const(tempo, dt, K2);
-	multvect_const(K2, 0.5, dx);
+	for (l = 1; l < rang; l++) Y1[l] = tempo[l];
+	multvect_const(Y1, dt / 2.0, dx);
+	addvect_vect(x, dx, Y2);
+
+	calcul_vecteur(Y2, tempo);
+	for (l = 1; l < rang; l++) Y2[l] = tempo[l];
+	multvect_const(Y2, dt, dx);
 	addvect_vect(x, dx, Y3);
 
 	calcul_vecteur(Y3, tempo);
-	multvect_const(tempo, dt, K3);
-	addvect_vect(x, K3, Y4);
+	for (l = 1; l < rang; l++) Y3[l] = tempo[l];
 
-	calcul_vecteur(Y4, tempo);
-	multvect_const(tempo, dt, K4);
+	multvect_const(Y1, 2.0, tempo);
+	for (l = 1; l < rang; l++) Y1[l] = tempo[l];
 
-	multvect_const(K2, 2, tempo);
-	for (l = 1; l < rang; l++) K2[l] = tempo[l];
+	multvect_const(Y2, 2.0, tempo);
+	for (l = 1; l < rang; l++) Y2[l] = tempo[l];
+	for (l = 1; l < rang; l++) dx[l] = Y0[l];
+	addvect_vect(dx, Y1, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
+	addvect_vect(dx, Y2, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
+	addvect_vect(dx, Y3, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
 
-	multvect_const(K3, 2, tempo);
-	for (l = 1; l < rang; l++) K3[l] = tempo[l];
-
-	addvect_vect(K1, K2, tempo);
-	addvect_vect(K3, K4, tempo_2);
-	addvect_vect(tempo, tempo_2, tempo_3);
-
-	multvect_const(tempo_3, 1 / 6.0, dx);
+	multvect_const(dx, dt / 6.0, tempo);
+	for (l = 1; l < rang; l++) dx[l] = tempo[l];
 	addvect_vect(x, dx, tempo);
 
 	for (l = 1; l < rang; l++) x[l] = tempo[l];
