@@ -68,6 +68,30 @@ const double fv = 1. * 0.0014439; /*  coeficiente de atrito dinâmico   */
 
 double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ira, irb, irc, t, om, te, Rbf;
 
+// parmetros do conversor
+double va1r = 0., vb1r = 0., vc1r = 0.;
+double hm2 = 0.2, tm2 = 0, Vsm = 0;
+double V10 = 0, V20 = 0, V30 = 0, V50 = 0;
+int q1 = 0, q3 = 0, q5 = 0;
+double vs1n = 0, vs2n = 0, vs3n = 0, vs5n = 0;
+double vmax = 0, vmin = 0, vmax2 = 0, vmin2 = 0, vmax1 = 0, vmin1 = 0, vn0a = 0, vn0b = 0, vn0t = 0;
+double delta = 0, vg1 = 0;
+int Tau1 = 0, Tau3 = 0, Tau5 = 0, Tdead;
+double tt1 = 0, tt3 = 0, tt5 = 0;
+int T = 0;
+int seq = 0;
+int cont = 0;
+int cont2 = 0;
+double vdc1 = 0;
+
+/* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
+double M = 0.0;  // indice de modulação
+double mi = 0.5;  //Distribuição dos vetores roda livre total
+double mia = 0.5;  //Distribuição de roda livre  fases 135
+double tmorto = 0.0000015;  // Tempo morto
+/* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
+
+
 /* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
 
 double rqi3 = 0.5774;
@@ -101,7 +125,8 @@ void calcul_de_R(void)
 	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
 
 	R[1][1] = R[2][2] = R[3][3] = Rs;
-	R[4][4] = R[5][5] = R[6][6] = Rr;
+	R[4][4] = R[5][5] = Rr;
+	R[6][6] = Rr + Rbf;
 	R[1][2] = R[1][3] = R[1][7] = R[1][8] = 0.0;
 	R[2][1] = R[2][3] = R[2][7] = R[2][8] = 0.0;
 	R[3][1] = R[3][2] = R[3][7] = R[3][8] = 0.0;
@@ -160,12 +185,115 @@ void calcul_de_L(void)
 void calcul_de_U(void)
 {
 	double v1, v3, v5, v7, vdc, vdc2, fs;
+	int tipotensao = 0;
+	int rev = 0;  //com reversão rev-0 e sem reversão rev-1;
+	M = 1.0;
+
 	fs = 60.0;
+
+	vdc1 = 2 * Umax;
+	vdc = vdc1;
+	vdc2 = 0.5 * vdc;
+	Vsm = M * vdc2;  // Neutro Simples
 	oms = 2 * pi * fs;
 
-	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	if (tipotensao == 0) {
+		va1 = Umax * cos(oms * t);
+		vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
+		vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	}
+
+	else if (tipotensao == 3)    // Alimentação PWM
+		{
+		/*fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff*/
+		if (rev == 0) hm2 = 100 * dt;       // 5 kHz (2000) ou 1333 com rev. 5 kHz (1000) ou 667
+		else hm2 = 200 * dt;
+		/*fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff*/
+		T = int(hm2 / dt) + 1;
+		Tdead = double(tmorto / dt);
+
+		if (t >= tm2)
+		{
+			tm2 = tm2 + hm2;
+			if (rev == 0) seq = 1 - seq;
+			if (rev == 1) seq = 0;
+			va1r = Vsm * cos(oms * t);
+			vb1r = Vsm * cos(oms * t - 2.0 * pi / 3.0);
+			vc1r = Vsm * cos(oms * t + 2.0 * pi / 3.0);
+
+			// Máquina 1
+			vmax1 = va1r;
+			if (vb1r >= vmax1) vmax1 = vb1r;
+			if (vc1r >= vmax1) vmax1 = vc1r;
+
+			vmin1 = va1r;
+			if (vb1r < vmin1) vmin1 = vb1r;
+			if (vc1r < vmin1) vmin1 = vc1r;
+
+			vmax = vmax1;
+			if (vmax2 >= vmax) vmax = vmax2;
+
+			vmin = vmin1;
+			if (vmin2 < vmin) vmin = vmin2;
+
+			vn0a = 0.;//vdc*(mia-.5)-mia*vmax1-(1.-mia)*vmin1;  // Tensão vh
+			vs1n = va1r + vn0a;
+			vs3n = vb1r + vn0a;
+			vs5n = vc1r + vn0a;
+
+			// Cálculo da Largura do Pulso
+			// Tau* = (vs*ref/E + 1./2)*Tpwm; (Tpwm - periodo de amostragem)
+
+			tt1 = (vs1n / vdc + 0.5);
+			tt3 = (vs3n / vdc + 0.5);
+			tt5 = (vs5n / vdc + 0.5);
+
+			Tau1 = int(tt1 * T + .5);
+			if (Tau1 > T) Tau1 = T;
+			if (Tau1 < 0) Tau1 = 0;
+
+			Tau3 = int(tt3 * T + .5);
+			if (Tau3 > T) Tau3 = T;
+			if (Tau3 < 0) Tau3 = 0;
+
+			Tau5 = int(tt5 * T + .5);
+			if (Tau5 > T) Tau5 = T;
+			if (Tau5 < 0) Tau5 = 0;
+
+			cont = 0;
+		}
+		if (seq == 0.)
+		{
+			if (cont < Tau1)  q1 = 1;
+			else              q1 = 0;
+			if (cont < Tau3)   q3 = 1;
+			else              q3 = 0;
+			if (cont < Tau5)   q5 = 1;
+			else              q5 = 0;
+		}
+		if (seq == 1.)
+		{
+			if (cont < (T - Tau1))  q1 = 0;
+			else                   q1 = 1;
+			if (cont < (T - Tau3))  q3 = 0;
+			else                   q3 = 1;
+			if (cont < (T - Tau5))  q5 = 0;
+			else                   q5 = 1;
+		}
+
+		// Tensoes de Pólo
+		V10 = (2. * q1 - 1.) * (vdc2);
+		V30 = (2. * q3 - 1.) * (vdc2);
+		V50 = (2. * q5 - 1.) * (vdc2);
+
+		vg1 = (V10 + V30 + V50) / 3.;
+
+
+		// Tensão de fase
+		va1 = V10 - vg1;
+		vc1 = V30 - vg1;
+		vb1 = V50 - vg1;
+}
 
 	vsdef = 0.0;
 
@@ -338,7 +466,7 @@ void mas()
 
 	// Para determinação da tensão entre os neutros
 	// Cálculo da tensao nos bornes da carga e tensao de neutro
-	/*
+	
 	double somme_dLI1, somme_L_dI1;
 	double somme_dLI2, somme_L_dI2;
 	double somme_dLI3, somme_L_dI3;
@@ -377,7 +505,7 @@ void mas()
 
 	   //vn1 = vsa_charge1 - va1;
 	   vn1 = (vsa_charge1 + vsa_charge2 + vsa_charge3)/3.;
-	*/
+	
 }
 
 /* Programa principal */
@@ -394,7 +522,7 @@ int wmain()
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	/* denominação do arquivo de saída */
 	//fic=fopen("s000c30c100bi11_30A.dat","w");
-	fic = fopen("joao_pedro.dat", "w");
+	fic = fopen("jp_falha_pwm.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 	results = mmake(NiterG, 7);
@@ -402,7 +530,7 @@ int wmain()
 	results->mat[i][0] = t;
 	results->mat[i][1] = om;
 	results->mat[i][2] = isa1;
-	results->mat[i][3] = isb1;
+	results->mat[i][3] = ira;
 	results->mat[i][4] = isc1;
 	results->mat[i][5] = isdef;
 	results->mat[i][6] = te;
@@ -421,12 +549,14 @@ int wmain()
 		{
 			mas();
 			t = t + dt;
+			//Rbf = 0.5 * Rr;
+			Rbf = 0;
 		}
 
 		results->mat[i][0] = t;
 		results->mat[i][1] = om;
 		results->mat[i][2] = isa1;
-		results->mat[i][3] = isb1;
+		results->mat[i][3] = ira;
 		results->mat[i][4] = isc1;
 		results->mat[i][5] = isdef;
 		results->mat[i][6] = te;   // conjugado eletromagnetico
