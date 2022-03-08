@@ -137,6 +137,95 @@ void init_angles(void)
 	Xc6 = p * (teta + 5 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
 }
 
+void assemble_R(void)
+{
+	double M[8][8];
+	int tam = 8;
+
+	double a = 2*(Rb + Re);
+	double b = -Rb;
+	double c = -Re;
+	double d = tam*Re;
+
+	for (int i = 0; i < tam; i++) {
+		for (int j = 0; j < tam; j++) {
+			if (i == 0 && j == tam - 2) {
+				M[i][j] = b;
+			}
+			else
+			if (i == tam - 2 && j == 0) {
+				M[i][j] = b;
+			}
+			else if (i == j && i != tam - 1) {
+				M[i][j] = a;
+			}
+			else if (i + 1 == j && j != tam - 1) {
+				M[i][j] = b;
+			}
+			else if (i - 1 == j && i != tam - 1) {
+				M[i][j] = b;
+			}
+			else if (j == tam - 1) {
+				M[i][j] = c;
+			}
+			else if (i == tam - 1) {
+				M[i][j] = c;
+			}
+			else {
+				M[i][j] = '0';
+			}
+		}
+	}
+	M[tam - 1][tam - 1] = d;
+}
+
+void assemble_Lr(void)
+{
+	double M[8][8];
+	int tam = 8;
+	double alpha = 2 * pi / tam;
+	double Lkk = (mu * l * r / g) * (1 - alpha / (2 * pi)) * alpha;
+	double Lki = -((mu * l * r) / g) * ((alpha * alpha) / (2 * pi));
+	double Ld = Lkk + 2 * (Le + Lb);
+	double Lt = Lki - Lb;
+
+	double a = Ld;
+	double b = Lt;
+	double c = -Le;
+	double d = tam*Le;
+
+	for (int i = 0; i < tam; i++) {
+		for (int j = 0; j < tam; j++) {
+			if (i == 0 && j == tam - 2) {
+				M[i][j] = b;
+			}
+			else
+				if (i == tam - 2 && j == 0) {
+					M[i][j] = b;
+				}
+				else if (i == j && i != tam - 1) {
+					M[i][j] = a;
+				}
+				else if (i + 1 == j && j != tam - 1) {
+					M[i][j] = b;
+				}
+				else if (i - 1 == j && i != tam - 1) {
+					M[i][j] = b;
+				}
+				else if (j == tam - 1) {
+					M[i][j] = c;
+				}
+				else if (i == tam - 1) {
+					M[i][j] = c;
+				}
+				else {
+					M[i][j] = Lki;
+				}
+		}
+	}
+	M[tam - 1][tam - 1] = d;
+}
+
 void calcul_de_R(void)
 {
 	double c;
