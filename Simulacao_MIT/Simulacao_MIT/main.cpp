@@ -226,6 +226,39 @@ void assemble_Lr(void)
 	M[tam - 1][tam - 1] = d;
 }
 
+void assemble_Lsr() {
+
+	double M[3][7];
+	int tam = 7;
+	double alpha = 2 * pi / tam;
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < tam; j++) {
+			if (i == 0) {
+				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2));
+			}
+			if (i == 1) {
+				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2)-2*pi/3);
+			}
+			if (i == 2) {
+				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
+			}
+		}
+	}
+}
+
+void assemble_Lrs(void) {
+	double MT[7][3];
+	double M[3][7];
+	int tam = 7;
+
+	for (int i = 0; i < tam; i++) {
+		for (int j = 0; j < 3; j++) {
+			MT[i][j] = M[j][i];
+		}
+	}
+}
+
 void calcul_de_R(void)
 {
 	double c;
