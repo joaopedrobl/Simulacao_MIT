@@ -101,8 +101,17 @@ double Xb1, Xb2, Xb3, Xb4, Xb5, Xb6;
 double Xc1, Xc2, Xc3, Xc4, Xc5, Xc6;
 double K1, K2, K3, K4, K5, K6;
 
-matrice L, dL, A, b, inv_L, B, R;
+matrice L, dL, A, b, inv_L, B;
 vecteur x, U, BU, Ad;
+
+double R[7][7];
+double L_r[7][7];
+double L_sr[3][7];
+double L_rs[7][3];
+double R_s[3][3];
+double L_s[3][3];
+
+int tam = 7;
 
 /* M�todo espec�fico de invers�o de Matriz SVD */
 vecteur w;
@@ -139,8 +148,6 @@ void init_angles(void)
 
 void assemble_R(void)
 {
-	double M[8][8];
-	int tam = 8;
 
 	double a = 2*(Rb + Re);
 	double b = -Rb;
@@ -150,39 +157,38 @@ void assemble_R(void)
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < tam; j++) {
 			if (i == 0 && j == tam - 2) {
-				M[i][j] = b;
+				R[i][j] = b;
 			}
 			else
 			if (i == tam - 2 && j == 0) {
-				M[i][j] = b;
+				R[i][j] = b;
 			}
 			else if (i == j && i != tam - 1) {
-				M[i][j] = a;
+				R[i][j] = a;
 			}
 			else if (i + 1 == j && j != tam - 1) {
-				M[i][j] = b;
+				R[i][j] = b;
 			}
 			else if (i - 1 == j && i != tam - 1) {
-				M[i][j] = b;
+				R[i][j] = b;
 			}
 			else if (j == tam - 1) {
-				M[i][j] = c;
+				R[i][j] = c;
 			}
 			else if (i == tam - 1) {
-				M[i][j] = c;
+				R[i][j] = c;
 			}
 			else {
-				M[i][j] = '0';
+				R[i][j] = '0';
 			}
 		}
 	}
-	M[tam - 1][tam - 1] = d;
+	R[tam - 1][tam - 1] = d;
 }
 
 void assemble_Lr(void)
 {
-	double M[8][8];
-	int tam = 8;
+
 	double alpha = 2 * pi / tam;
 	double Lkk = (mu * l * r / g) * (1 - alpha / (2 * pi)) * alpha;
 	double Lki = -((mu * l * r) / g) * ((alpha * alpha) / (2 * pi));
@@ -197,134 +203,137 @@ void assemble_Lr(void)
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < tam; j++) {
 			if (i == 0 && j == tam - 2) {
-				M[i][j] = b;
+				L_r[i][j] = b;
 			}
 			else
 				if (i == tam - 2 && j == 0) {
-					M[i][j] = b;
+					L_r[i][j] = b;
 				}
 				else if (i == j && i != tam - 1) {
-					M[i][j] = a;
+					L_r[i][j] = a;
 				}
 				else if (i + 1 == j && j != tam - 1) {
-					M[i][j] = b;
+					L_r[i][j] = b;
 				}
 				else if (i - 1 == j && i != tam - 1) {
-					M[i][j] = b;
+					L_r[i][j] = b;
 				}
 				else if (j == tam - 1) {
-					M[i][j] = c;
+					L_r[i][j] = c;
 				}
 				else if (i == tam - 1) {
-					M[i][j] = c;
+					L_r[i][j] = c;
 				}
 				else {
-					M[i][j] = Lki;
+					L_r[i][j] = Lki;
 				}
 		}
 	}
-	M[tam - 1][tam - 1] = d;
+	L_r[tam - 1][tam - 1] = d;
 }
 
 void assemble_Lsr() {
 
-	double M[3][7];
-	int tam = 7;
 	double alpha = 2 * pi / tam;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < tam; j++) {
 			if (i == 0) {
-				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2));
+				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2));
 			}
 			if (i == 1) {
-				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2)-2*pi/3);
+				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2)-2*pi/3);
 			}
 			if (i == 2) {
-				M[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
+				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
 			}
 		}
 	}
 }
 
 void assemble_Lrs(void) {
-	double MT[7][3];
-	double M[3][7];
-	int tam = 7;
-
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < 3; j++) {
-			MT[i][j] = M[j][i];
+			L_rs[i][j] = L_sr[j][i];
 		}
 	}
 }
 
-void calcul_de_R(void)
-{
-	double c;
-	double sinteta;
-	double sinteta_pos;
-	double sinteta_neg;
-
-	c = -Lsr * x[8] * p; //TODO: Verificar
-	sinteta = sin(p * teta);
-	sinteta_pos = sin(p * teta + 2.0 * pi / 3.0);
-	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
-
-	K1 = Lsr * p * (x[1] * sin(Xa1) + x[2] * sin(Xb1) + x[3] * sin(Xc1));
-	K2 = Lsr * p * (x[1] * sin(Xa2) + x[2] * sin(Xb2) + x[3] * sin(Xc2));
-	K3 = Lsr * p * (x[1] * sin(Xa3) + x[2] * sin(Xb3) + x[3] * sin(Xc3));
-	K4 = Lsr * p * (x[1] * sin(Xa4) + x[2] * sin(Xb4) + x[3] * sin(Xc4));
-	K5 = Lsr * p * (x[1] * sin(Xa5) + x[2] * sin(Xb5) + x[3] * sin(Xc5));
-	K6 = Lsr * p * (x[1] * sin(Xa6) + x[2] * sin(Xb6) + x[3] * sin(Xc6));
-
-	
-	R[1][1] = R[2][2] = R[3][3] = rs;
-
-	R[4][4] = R[5][5] = R[6][6] = R[7][7] = R[8][8] = R[9][9] = 2*(Rb + Re);
-
-
-	R[1][4] = R[4][1] = c * sin(p*(teta));
-	R[1][5] = R[5][1] = c * sin(p*teta+2*pi/3);
-	R[1][6] = R[6][1] = c * sin(p*teta-2*pi/3.0);
-
-	R[1][4] = R[4][1] = c * sin(Xa1);
-	R[1][5] = R[5][1] = c * sin(Xa2);
-	R[1][6] = R[6][1] = c * sin(Xa3);
-	R[1][7] = R[7][1] = c * sin(Xa4);
-	R[1][8] = R[8][1] = c * sin(Xa5);
-	R[1][9] = R[9][1] = c * sin(Xa6);
-
-	R[2][4] = R[4][2] = c * sin(Xb1);
-	R[2][5] = R[5][2] = c * sin(Xb2);
-	R[2][6] = R[6][2] = c * sin(Xb3);
-	R[2][7] = R[7][2] = c * sin(Xb4);
-	R[2][8] = R[8][2] = c * sin(Xb5);
-	R[2][9] = R[9][2] = c * sin(Xb6);
-
-	R[3][4] = R[4][3] = c * sin(Xc1);
-	R[3][5] = R[5][3] = c * sin(Xc2);
-	R[3][6] = R[6][3] = c * sin(Xc3);
-	R[3][7] = R[7][3] = c * sin(Xc4);
-	R[3][8] = R[8][3] = c * sin(Xc5);
-	R[3][9] = R[9][3] = c * sin(Xc6);
-
-	R[4][5] = R[4][9] = R[5][4] = R[5][6] = R[6][5] = R[6][7] = R[7][6] = R[7][8] = R[8][7] = R[8][9] = R[9][4] = R[9][8] = -Rb;
-
-	R[10][4] = R[10][5] = R[10][6] = R[10][7] = R[10][8] = R[10][9] = -Re;
-	R[4][10] = R[5][10] = R[6][10] = R[7][10] = R[8][10] = R[9][10] = -Re;
-	R[11][4] = K1;
-	R[11][5] = K2;
-	R[11][6] = K3;
-	R[11][7] = K4;
-	R[11][8] = K5;
-	R[11][9] = K6;
-
-
-	R[10][10] = nb*Re;
-	R[11][11] = fv;
-	R[12][11] = -1;
+void assemble_R_s(void) {
+	R_s[0][0] = R_s[1][1] = R_s[2][2] = Rs;
 }
+
+void assemble_L_s(void) {
+	L_s[0][0] = L_s[1][1] = L_s[2][2] = Lls + Lms;
+	L_s[0][1] = L_s[0][2] = L_s[1][2] = L_s[1][0] = L_s[2][0] = L_s[2][1] = -0.5 * Lms;
+}
+
+//void calcul_de_R(void)
+//{
+//	double c;
+//	double sinteta;
+//	double sinteta_pos;
+//	double sinteta_neg;
+//
+//	c = -Lsr * x[8] * p; //TODO: Verificar
+//	sinteta = sin(p * teta);
+//	sinteta_pos = sin(p * teta + 2.0 * pi / 3.0);
+//	sinteta_neg = sin(p * teta - 2.0 * pi / 3.0);
+//
+//	K1 = Lsr * p * (x[1] * sin(Xa1) + x[2] * sin(Xb1) + x[3] * sin(Xc1));
+//	K2 = Lsr * p * (x[1] * sin(Xa2) + x[2] * sin(Xb2) + x[3] * sin(Xc2));
+//	K3 = Lsr * p * (x[1] * sin(Xa3) + x[2] * sin(Xb3) + x[3] * sin(Xc3));
+//	K4 = Lsr * p * (x[1] * sin(Xa4) + x[2] * sin(Xb4) + x[3] * sin(Xc4));
+//	K5 = Lsr * p * (x[1] * sin(Xa5) + x[2] * sin(Xb5) + x[3] * sin(Xc5));
+//	K6 = Lsr * p * (x[1] * sin(Xa6) + x[2] * sin(Xb6) + x[3] * sin(Xc6));
+//
+//	
+//	R[1][1] = R[2][2] = R[3][3] = rs;
+//
+//	R[4][4] = R[5][5] = R[6][6] = R[7][7] = R[8][8] = R[9][9] = 2*(Rb + Re);
+//
+//
+//	R[1][4] = R[4][1] = c * sin(p*(teta));
+//	R[1][5] = R[5][1] = c * sin(p*teta+2*pi/3);
+//	R[1][6] = R[6][1] = c * sin(p*teta-2*pi/3.0);
+//
+//	R[1][4] = R[4][1] = c * sin(Xa1);
+//	R[1][5] = R[5][1] = c * sin(Xa2);
+//	R[1][6] = R[6][1] = c * sin(Xa3);
+//	R[1][7] = R[7][1] = c * sin(Xa4);
+//	R[1][8] = R[8][1] = c * sin(Xa5);
+//	R[1][9] = R[9][1] = c * sin(Xa6);
+//
+//	R[2][4] = R[4][2] = c * sin(Xb1);
+//	R[2][5] = R[5][2] = c * sin(Xb2);
+//	R[2][6] = R[6][2] = c * sin(Xb3);
+//	R[2][7] = R[7][2] = c * sin(Xb4);
+//	R[2][8] = R[8][2] = c * sin(Xb5);
+//	R[2][9] = R[9][2] = c * sin(Xb6);
+//
+//	R[3][4] = R[4][3] = c * sin(Xc1);
+//	R[3][5] = R[5][3] = c * sin(Xc2);
+//	R[3][6] = R[6][3] = c * sin(Xc3);
+//	R[3][7] = R[7][3] = c * sin(Xc4);
+//	R[3][8] = R[8][3] = c * sin(Xc5);
+//	R[3][9] = R[9][3] = c * sin(Xc6);
+//
+//	R[4][5] = R[4][9] = R[5][4] = R[5][6] = R[6][5] = R[6][7] = R[7][6] = R[7][8] = R[8][7] = R[8][9] = R[9][4] = R[9][8] = -Rb;
+//
+//	R[10][4] = R[10][5] = R[10][6] = R[10][7] = R[10][8] = R[10][9] = -Re;
+//	R[4][10] = R[5][10] = R[6][10] = R[7][10] = R[8][10] = R[9][10] = -Re;
+//	R[11][4] = K1;
+//	R[11][5] = K2;
+//	R[11][6] = K3;
+//	R[11][7] = K4;
+//	R[11][8] = K5;
+//	R[11][9] = K6;
+//
+//
+//	R[10][10] = nb*Re;
+//	R[11][11] = fv;
+//	R[12][11] = -1;
+//}
 
 void calcul_de_L(void)
 {
@@ -431,7 +440,7 @@ void calcul_vecteur(double d[rang], double c[rang])
 	//multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
 	//sousvect_vect(BU, Ad, c);
 
-	multmat_vect(R, d, BU);
+	//multmat_vect(R, d, BU);
 	sousvect_vect(U, BU, BU);
 	multmat_vect(inv_L, BU, c);
 
