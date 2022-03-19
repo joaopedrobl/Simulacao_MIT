@@ -101,15 +101,20 @@ double Xb1, Xb2, Xb3, Xb4, Xb5, Xb6;
 double Xc1, Xc2, Xc3, Xc4, Xc5, Xc6;
 double K1, K2, K3, K4, K5, K6;
 
-matrice L, dL, A, b, inv_L, B;
+matrice dL, A, b, inv_L, B;
 vecteur x, U, BU, Ad;
 
-double R[7][7];
+double R_r[7][7];
 double L_r[7][7];
 double L_sr[3][7];
+double dL_sr[3][7];
 double L_rs[7][3];
+double dL_rs[7][3];
 double R_s[3][3];
 double L_s[3][3];
+
+double L[13][13];
+double R[13][13];
 
 int tam = 7;
 
@@ -157,33 +162,33 @@ void assemble_R(void)
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < tam; j++) {
 			if (i == 0 && j == tam - 2) {
-				R[i][j] = b;
+				R_r[i][j] = b;
 			}
 			else
 			if (i == tam - 2 && j == 0) {
-				R[i][j] = b;
+				R_r[i][j] = b;
 			}
 			else if (i == j && i != tam - 1) {
-				R[i][j] = a;
+				R_r[i][j] = a;
 			}
 			else if (i + 1 == j && j != tam - 1) {
-				R[i][j] = b;
+				R_r[i][j] = b;
 			}
 			else if (i - 1 == j && i != tam - 1) {
-				R[i][j] = b;
+				R_r[i][j] = b;
 			}
 			else if (j == tam - 1) {
-				R[i][j] = c;
+				R_r[i][j] = c;
 			}
 			else if (i == tam - 1) {
-				R[i][j] = c;
+				R_r[i][j] = c;
 			}
 			else {
-				R[i][j] = '0';
+				R_r[i][j] = '0';
 			}
 		}
 	}
-	R[tam - 1][tam - 1] = d;
+	R_r[tam - 1][tam - 1] = d;
 }
 
 void assemble_Lr(void)
@@ -251,10 +256,38 @@ void assemble_Lsr() {
 	}
 }
 
+void assemble_dLsr() {
+
+	double alpha = 2 * pi / tam;
+	double K = -p * Lsr * om;
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < tam; j++) {
+			if (i == 0) {
+				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2));
+			}
+			if (i == 1) {
+				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2) - 2 * pi / 3);
+			}
+			if (i == 2) {
+				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
+			}
+		}
+	}
+}
+
 void assemble_Lrs(void) {
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < 3; j++) {
 			L_rs[i][j] = L_sr[j][i];
+		}
+	}
+}
+
+void assemble_dLrs(void) {
+	for (int i = 0; i < tam; i++) {
+		for (int j = 0; j < 3; j++) {
+			dL_rs[i][j] = dL_sr[j][i];
 		}
 	}
 }
@@ -334,6 +367,56 @@ void assemble_L_s(void) {
 //	R[11][11] = fv;
 //	R[12][11] = -1;
 //}
+
+void assemble_L(void) {
+	for (int i = 1; i <= 3; i++) {
+		for (int j = 1; j <= 3; j++) {
+			L[i][j] = L_s[i-1][j-1];
+		}
+	}
+	for (i = 1; i <= 3; i++) {
+		for (j = 4; j <= tam+4; j++) {
+			L[i][j] = L_sr[i - 1][j - 4];
+		}
+	}
+	for (i = 4; i <= tam+3; i++) {
+		for (j = 1; j <= 3; j++) {
+			L[i][j] = L_rs[i - 4][j - 1];
+		}
+	}
+	for (i = 4; i <= tam+3; i++) {
+		for (j = 4; j <= tam + 3; j++) {
+			L[i][j] = L_r[i - 4][j - 4];
+		}
+	}
+	L[tam+3+1][tam+3+1] = Jt;
+	L[tam + 3 + 2][tam + 3 + 2] = 1.0;
+}
+
+void assemble_R(void) {
+	for (int i = 1; i <= 3; i++) {
+		for (int j = 1; j <= 3; j++) {
+			R[i][j] = R_s[i - 1][j - 1];
+		}
+	}
+	for (i = 1; i <= 3; i++) {
+		for (j = 4; j <= tam + 4; j++) {
+			R[i][j] = dL_sr[i - 1][j - 4]; 
+		}
+	}
+	for (i = 4; i <= tam + 3; i++) {
+		for (j = 1; j <= 3; j++) {
+			R[i][j] = dL_rs[i - 4][j - 1];
+		}
+	}
+	for (i = 4; i <= tam + 3; i++) {
+		for (j = 4; j <= tam + 3; j++) {
+			R[i][j] = R_r[i - 4][j - 4];
+		}
+	}
+	R[tam + 3 + 1][tam + 3 + 1] = fv;
+	L[tam + 3 + 2][tam + 3 + 1] = -1.0;
+}
 
 void calcul_de_L(void)
 {
@@ -429,7 +512,7 @@ void calcul_vecteur(double d[rang], double c[rang])
 	// As fun��es de invers�o, multiplica��o e subtra��o de matrizes est�o no programa routines
 	calcul_de_L();          /* Calcula-se a matriz L */
 
-	calcul_de_R();          /* Matriz R */
+	//calcul_de_R();          /* Matriz R */
 
 	inv(L, inv_L);  /* Invers�o de L */
 
