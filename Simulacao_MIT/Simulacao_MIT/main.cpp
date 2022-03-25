@@ -126,32 +126,32 @@ FILE* fichier;
 
 matrix* results;
 
-void init_angles(void) 
-{
+//void init_angles(void) 
+//{
+//
+//	Xa1 = p * (teta + (pi / 6));
+//	Xa2 = p * (teta + (pi / 3) + (pi / 6));
+//	Xa3 = p * (teta + 2 * (pi / 3) + (pi / 6));
+//	Xa4 = p * (teta + 3 * (pi / 3) + (pi / 6));
+//	Xa5 = p * (teta + 4 * (pi / 3) + (pi / 6));
+//	Xa6 = p * (teta + 5 * (pi / 3) + (pi / 6));
+//
+//	Xb1 = p * (teta + (pi / 6)) - 2*pi/3;
+//	Xb2 = p * (teta + (pi / 3) + (pi / 6)) - 2 * pi / 3;
+//	Xb3 = p * (teta + 2 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+//	Xb4 = p * (teta + 3 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+//	Xb5 = p * (teta + 4 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+//	Xb6 = p * (teta + 5 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
+//
+//	Xc1 = p * (teta + (pi / 6)) + 2 * pi / 3;
+//	Xc2 = p * (teta + (pi / 3) + (pi / 6)) + 2 * pi / 3;
+//	Xc3 = p * (teta + 2 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+//	Xc4 = p * (teta + 3 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+//	Xc5 = p * (teta + 4 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+//	Xc6 = p * (teta + 5 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
+//}
 
-	Xa1 = p * (teta + (pi / 6));
-	Xa2 = p * (teta + (pi / 3) + (pi / 6));
-	Xa3 = p * (teta + 2 * (pi / 3) + (pi / 6));
-	Xa4 = p * (teta + 3 * (pi / 3) + (pi / 6));
-	Xa5 = p * (teta + 4 * (pi / 3) + (pi / 6));
-	Xa6 = p * (teta + 5 * (pi / 3) + (pi / 6));
-
-	Xb1 = p * (teta + (pi / 6)) - 2*pi/3;
-	Xb2 = p * (teta + (pi / 3) + (pi / 6)) - 2 * pi / 3;
-	Xb3 = p * (teta + 2 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
-	Xb4 = p * (teta + 3 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
-	Xb5 = p * (teta + 4 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
-	Xb6 = p * (teta + 5 * (pi / 3) + (pi / 6)) - 2 * pi / 3;
-
-	Xc1 = p * (teta + (pi / 6)) + 2 * pi / 3;
-	Xc2 = p * (teta + (pi / 3) + (pi / 6)) + 2 * pi / 3;
-	Xc3 = p * (teta + 2 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
-	Xc4 = p * (teta + 3 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
-	Xc5 = p * (teta + 4 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
-	Xc6 = p * (teta + 5 * (pi / 3) + (pi / 6)) + 2 * pi / 3;
-}
-
-void assemble_R(void)
+void assemble_Rr(void)
 {
 
 	double a = 2*(Rb + Re);
@@ -184,7 +184,7 @@ void assemble_R(void)
 				R_r[i][j] = c;
 			}
 			else {
-				R_r[i][j] = '0';
+				R_r[i][j] = 0;
 			}
 		}
 	}
@@ -237,12 +237,12 @@ void assemble_Lr(void)
 	L_r[tam - 1][tam - 1] = d;
 }
 
-void assemble_Lsr() {
+void assemble_Lsr() { //TODO: corrigir 
 
 	double alpha = 2 * pi / tam;
 
 	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < tam; j++) {
+		for (int j = 0; j < tam -1; j++) {
 			if (i == 0) {
 				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2));
 			}
@@ -262,7 +262,7 @@ void assemble_dLsr() {
 	double K = -p * Lsr * om;
 
 	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < tam; j++) {
+		for (int j = 0; j < tam -1 ; j++) {
 			if (i == 0) {
 				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2));
 			}
@@ -369,13 +369,19 @@ void assemble_L_s(void) {
 //}
 
 void assemble_L(void) {
+
+	assemble_L_s();
+	assemble_Lsr();
+	assemble_Lrs();
+	assemble_Lr();
+
 	for (int i = 1; i <= 3; i++) {
 		for (int j = 1; j <= 3; j++) {
 			L[i][j] = L_s[i-1][j-1];
 		}
 	}
 	for (i = 1; i <= 3; i++) {
-		for (j = 4; j <= tam+4; j++) {
+		for (j = 4; j <= tam+3; j++) {
 			L[i][j] = L_sr[i - 1][j - 4];
 		}
 	}
@@ -394,6 +400,13 @@ void assemble_L(void) {
 }
 
 void assemble_R(void) {
+
+	assemble_R_s();
+	assemble_dLsr();
+	assemble_dLrs();
+	assemble_Rr();
+	double alpha = 2 * pi / tam;
+
 	for (int i = 1; i <= 3; i++) {
 		for (int j = 1; j <= 3; j++) {
 			R[i][j] = R_s[i - 1][j - 1];
@@ -414,71 +427,78 @@ void assemble_R(void) {
 			R[i][j] = R_r[i - 4][j - 4];
 		}
 	}
+
+	for (j = 4; j <= tam + 2; j++) {
+		double X1 = p * (teta + j - 4 * alpha + alpha / 2);
+		double X2 = p * (teta + j - 4 * alpha + alpha / 2) - 2 * pi / 3;
+		double X3 = p * (teta + j - 4 * alpha + alpha / 2) + 2 * pi / 3;
+		R[tam + 4][j] = Lsr * p * ( isa1 * sin(X1) + isb1 * sin(X2)+ isc1 * sin(X3));
+	}
 	R[tam + 3 + 1][tam + 3 + 1] = fv;
-	L[tam + 3 + 2][tam + 3 + 1] = -1.0;
+	R[tam + 3 + 2][tam + 3 + 1] = -1.0;
 }
 
-void calcul_de_L(void)
-{
-	double costeta;
-	double costeta_neg;
-	double costeta_pos;
-	double Lkk;
-	double Ld, Lt, Lki;
-
-	Lkk = (mu*l*r/g)*(1-(pi/3)/(2*pi))*(pi/3);
-	Ld = Lkk + 2 * (Le + Lb);
-	Lki = -((mu * l * r) / g) * (((pi / 3) * (pi / 3)) / (2 * pi));
-	Lt = Lki - Lb;
-
-	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
-	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
-
-	L[1][4] = L[4][1] = Lsr * cos(Xa1);
-	L[1][5] = L[5][1] = Lsr * cos(Xa2);
-	L[1][6] = L[6][1] = Lsr * cos(Xa3);
-	L[1][7] = L[7][1] = Lsr * cos(Xa4);
-	L[1][8] = L[8][1] = Lsr * cos(Xa5);
-	L[1][9] = L[9][1] = Lsr * cos(Xa6);
-
-	L[2][4] = L[4][2] = Lsr * cos(Xb1);
-	L[2][5] = L[5][2] = Lsr * cos(Xb2);
-	L[2][6] = L[6][2] = Lsr * cos(Xb3);
-	L[2][7] = L[7][2] = Lsr * cos(Xb4);
-	L[2][8] = L[8][2] = Lsr * cos(Xb5);
-	L[2][9] = L[9][2] = Lsr * cos(Xb6);
-
-	L[3][4] = L[4][3] = Lsr * cos(Xc1);
-	L[3][5] = L[5][3] = Lsr * cos(Xc2);
-	L[3][6] = L[6][3] = Lsr * cos(Xc3);
-	L[3][7] = L[7][3] = Lsr * cos(Xc4);
-	L[3][8] = L[8][3] = Lsr * cos(Xc5);
-	L[3][9] = L[9][3] = Lsr * cos(Xc6);
-
-	L[4][4] = L[5][5] = L[6][6] = L[7][7] = L[8][8] = L[9][9] = Ld;
-
-	L[4][5] = L[4][9] = L[5][4] = L[5][6] = L[6][5] = L[6][7] = L[7][6] = L[7][8] = L[8][7] = L[8][9] = L[9][4] = L[9][8] = Lt;
-
-	L[4][6] = L[4][7] = L[4][8] = L[5][7] = L[5][8] = L[5][9] = L[6][4] = L[6][8] = L[6][9] = L[7][4] = L[7][5] = L[7][9] = L[8][4] = L[8][5] = L[8][6] = L[9][5] = L[9][6] = L[9][7] = Lki;
-
-	L[4][10] = L[5][10] = L[6][10] = L[7][10] = L[8][10] = L[9][10] = -Le;
-	L[10][4] = L[10][5] = L[10][6] = L[10][7] = L[10][8] = L[10][9] = -Le;
-
-	L[10][1] = L[10][2] = L[10][3] = L[11][1] = L[11][2] = L[11][3] = L[12][1] = L[12][2] = L[12][3] = 0.0;
-
-	L[11][4] = L[11][5] = L[11][6] = L[11][7] = L[11][8] = L[11][9] = L[11][10] = 0.0;
-	L[12][4] = L[12][5] = L[12][6] = L[12][7] = L[12][8] = L[12][9] = L[12][10] = 0.0;
-	L[10][10] = nb*Le;
-
-	L[1][10] = L[2][10] = L[3][10] = 0;
-	L[1][11] = L[2][11] = L[3][11] = L[4][11] = L[5][11] = L[6][11] = L[7][11] = L[8][11] = L[9][11] = L[10][11] = L[12][11] = 0;
-	L[1][12] = L[2][12] = L[3][12] = L[4][12] = L[5][12] = L[6][12] = L[7][12] = L[8][12] = L[9][12] = L[10][12] = L[11][12] = 0;
-
-
-	L[11][11] = Jt;
-	L[12][12] = 1.0;
-
-}
+//void calcul_de_L(void)
+//{
+//	double costeta;
+//	double costeta_neg;
+//	double costeta_pos;
+//	double Lkk;
+//	double Ld, Lt, Lki;
+//
+//	Lkk = (mu*l*r/g)*(1-(pi/3)/(2*pi))*(pi/3);
+//	Ld = Lkk + 2 * (Le + Lb);
+//	Lki = -((mu * l * r) / g) * (((pi / 3) * (pi / 3)) / (2 * pi));
+//	Lt = Lki - Lb;
+//
+//	L[1][1] = L[2][2] = L[3][3] = Lls + Lms;
+//	L[1][2] = L[1][3] = L[2][3] = L[2][1] = L[3][1] = L[3][2] = -0.5 * Lms;
+//
+//	L[1][4] = L[4][1] = Lsr * cos(Xa1);
+//	L[1][5] = L[5][1] = Lsr * cos(Xa2);
+//	L[1][6] = L[6][1] = Lsr * cos(Xa3);
+//	L[1][7] = L[7][1] = Lsr * cos(Xa4);
+//	L[1][8] = L[8][1] = Lsr * cos(Xa5);
+//	L[1][9] = L[9][1] = Lsr * cos(Xa6);
+//
+//	L[2][4] = L[4][2] = Lsr * cos(Xb1);
+//	L[2][5] = L[5][2] = Lsr * cos(Xb2);
+//	L[2][6] = L[6][2] = Lsr * cos(Xb3);
+//	L[2][7] = L[7][2] = Lsr * cos(Xb4);
+//	L[2][8] = L[8][2] = Lsr * cos(Xb5);
+//	L[2][9] = L[9][2] = Lsr * cos(Xb6);
+//
+//	L[3][4] = L[4][3] = Lsr * cos(Xc1);
+//	L[3][5] = L[5][3] = Lsr * cos(Xc2);
+//	L[3][6] = L[6][3] = Lsr * cos(Xc3);
+//	L[3][7] = L[7][3] = Lsr * cos(Xc4);
+//	L[3][8] = L[8][3] = Lsr * cos(Xc5);
+//	L[3][9] = L[9][3] = Lsr * cos(Xc6);
+//
+//	L[4][4] = L[5][5] = L[6][6] = L[7][7] = L[8][8] = L[9][9] = Ld;
+//
+//	L[4][5] = L[4][9] = L[5][4] = L[5][6] = L[6][5] = L[6][7] = L[7][6] = L[7][8] = L[8][7] = L[8][9] = L[9][4] = L[9][8] = Lt;
+//
+//	L[4][6] = L[4][7] = L[4][8] = L[5][7] = L[5][8] = L[5][9] = L[6][4] = L[6][8] = L[6][9] = L[7][4] = L[7][5] = L[7][9] = L[8][4] = L[8][5] = L[8][6] = L[9][5] = L[9][6] = L[9][7] = Lki;
+//
+//	L[4][10] = L[5][10] = L[6][10] = L[7][10] = L[8][10] = L[9][10] = -Le;
+//	L[10][4] = L[10][5] = L[10][6] = L[10][7] = L[10][8] = L[10][9] = -Le;
+//
+//	L[10][1] = L[10][2] = L[10][3] = L[11][1] = L[11][2] = L[11][3] = L[12][1] = L[12][2] = L[12][3] = 0.0;
+//
+//	L[11][4] = L[11][5] = L[11][6] = L[11][7] = L[11][8] = L[11][9] = L[11][10] = 0.0;
+//	L[12][4] = L[12][5] = L[12][6] = L[12][7] = L[12][8] = L[12][9] = L[12][10] = 0.0;
+//	L[10][10] = nb*Le;
+//
+//	L[1][10] = L[2][10] = L[3][10] = 0;
+//	L[1][11] = L[2][11] = L[3][11] = L[4][11] = L[5][11] = L[6][11] = L[7][11] = L[8][11] = L[9][11] = L[10][11] = L[12][11] = 0;
+//	L[1][12] = L[2][12] = L[3][12] = L[4][12] = L[5][12] = L[6][12] = L[7][12] = L[8][12] = L[9][12] = L[10][12] = L[11][12] = 0;
+//
+//
+//	L[11][11] = Jt;
+//	L[12][12] = 1.0;
+//
+//}
 
 // Gera��o da Tens�o de Alimenta��o
 void calcul_de_U(void)
@@ -510,9 +530,12 @@ void calcul_de_U(void)
 void calcul_vecteur(double d[rang], double c[rang])
 {
 	// As fun��es de invers�o, multiplica��o e subtra��o de matrizes est�o no programa routines
-	calcul_de_L();          /* Calcula-se a matriz L */
+	//calcul_de_L();          /* Calcula-se a matriz L */
 
 	//calcul_de_R();          /* Matriz R */
+
+	assemble_L();
+	assemble_R();
 
 	inv(L, inv_L);  /* Invers�o de L */
 
@@ -523,7 +546,7 @@ void calcul_vecteur(double d[rang], double c[rang])
 	//multmat_vect(inv_L, U, BU);  // B * U   B = inv_L;
 	//sousvect_vect(BU, Ad, c);
 
-	//multmat_vect(R, d, BU);
+	multmat_vect(R, d, BU);
 	sousvect_vect(U, BU, BU);
 	multmat_vect(inv_L, BU, c);
 
