@@ -203,7 +203,7 @@ void assemble_Lr(void)
 	double a = Ld;
 	double b = Lt;
 	double c = -Le;
-	double d = tam*Le;
+	double d = (tam-1)*Le;
 
 	for (int i = 0; i < tam; i++) {
 		for (int j = 0; j < tam; j++) {
@@ -239,7 +239,7 @@ void assemble_Lr(void)
 
 void assemble_Lsr() { //TODO: corrigir 
 
-	double alpha = 2 * pi / tam;
+	double alpha = 2 * pi / (tam - 1);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < tam -1; j++) {
@@ -258,7 +258,7 @@ void assemble_Lsr() { //TODO: corrigir
 
 void assemble_dLsr() {
 
-	double alpha = 2 * pi / tam;
+	double alpha = 2 * pi / (tam-1);
 	double K = -p * Lsr * om;
 
 	for (int i = 0; i < 3; i++) {
@@ -370,7 +370,7 @@ void assemble_L_s(void) {
 
 void assemble_L(void) {
 
-	assemble_L_s();
+	assemble_L_s(); 
 	assemble_Lsr();
 	assemble_Lrs();
 	assemble_Lr();
@@ -576,15 +576,20 @@ void init()
 	Cr = 0.0;
 	teta = 0.0;
 	Rbf = 0.0;
-	isa1 = x[1] = 0.0;
-	isb1 = x[2] = 0.0;
-	isc1 = x[3] = 0.0;
-	ir1 = x[4] = 0.0;
-	ir2 = x[5] = 0.0;
-	ir3 = x[6] = 0.0;
-	ire = x[7] = 0.0;
-	om = x[8] = 0.0;
-	teta = x[9] = 0.0;
+
+	isa1 = x[1] = 0;
+	isb1 = x[2] = 0;
+	isc1 = x[3] = 0;
+	ir1 = x[4] = 0;
+	ir2 = x[5] = 0;
+	ir3 = x[6] = 0;
+	ir4 = x[7] = 0;
+	ir5 = x[8] = 0;
+	ir6 = x[9] = 0;
+	ire = x[10] = 0;
+	om = x[11] = 100;
+	teta = x[12] = pi/6;
+
 }
 
 // M�todo Runge-kutta
