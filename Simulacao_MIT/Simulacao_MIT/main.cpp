@@ -413,7 +413,7 @@ void assemble_R(void) {
 		}
 	}
 	for (i = 1; i <= 3; i++) {
-		for (j = 4; j <= tam + 4; j++) {
+		for (j = 4; j <= tam + 3; j++) {
 			R[i][j] = dL_sr[i - 1][j - 4]; 
 		}
 	}
@@ -587,8 +587,8 @@ void init()
 	ir5 = x[8] = 0;
 	ir6 = x[9] = 0;
 	ire = x[10] = 0;
-	om = x[11] = 100;
-	teta = x[12] = pi/6;
+	om = x[11] = 0;
+	teta = x[12] = 0;
 
 }
 
