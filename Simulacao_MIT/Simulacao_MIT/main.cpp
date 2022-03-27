@@ -154,38 +154,38 @@ matrix* results;
 void assemble_Rr(void)
 {
 
-	double a = 2*(Rb + Re);
+	double a = 2 * (Rb + Re);
 	double b = -Rb;
 	double c = -Re;
-	double d = tam*Re;
+	double d = tam * Re;
 
-	for (int i = 0; i < tam; i++) {
-		for (int j = 0; j < tam; j++) {
-			if (i == 0 && j == tam - 2) {
-				R_r[i][j] = b;
+	for (int m = 0; m < tam; m++) {
+		for (int n = 0; n < tam; n++) {
+			if (m == 0 && n == tam - 2) {
+				R_r[m][n] = b;
 			}
 			else
-			if (i == tam - 2 && j == 0) {
-				R_r[i][j] = b;
-			}
-			else if (i == j && i != tam - 1) {
-				R_r[i][j] = a;
-			}
-			else if (i + 1 == j && j != tam - 1) {
-				R_r[i][j] = b;
-			}
-			else if (i - 1 == j && i != tam - 1) {
-				R_r[i][j] = b;
-			}
-			else if (j == tam - 1) {
-				R_r[i][j] = c;
-			}
-			else if (i == tam - 1) {
-				R_r[i][j] = c;
-			}
-			else {
-				R_r[i][j] = 0;
-			}
+				if (m == tam - 2 && n == 0) {
+					R_r[m][n] = b;
+				}
+				else if (m == n && m != tam - 1) {
+					R_r[m][n] = a;
+				}
+				else if (m + 1 == n && n != tam - 1) {
+					R_r[m][n] = b;
+				}
+				else if (m - 1 == n && m != tam - 1) {
+					R_r[m][n] = b;
+				}
+				else if (n == tam - 1) {
+					R_r[m][n] = c;
+				}
+				else if (m == tam - 1) {
+					R_r[m][n] = c;
+				}
+				else {
+					R_r[m][n] = 0;
+				}
 		}
 	}
 	R_r[tam - 1][tam - 1] = d;
@@ -203,34 +203,34 @@ void assemble_Lr(void)
 	double a = Ld;
 	double b = Lt;
 	double c = -Le;
-	double d = (tam-1)*Le;
+	double d = (tam - 1) * Le;
 
-	for (int i = 0; i < tam; i++) {
-		for (int j = 0; j < tam; j++) {
-			if (i == 0 && j == tam - 2) {
-				L_r[i][j] = b;
+	for (int m = 0; m < tam; m++) {
+		for (int n = 0; n < tam; n++) {
+			if (m == 0 && n == tam - 2) {
+				L_r[m][n] = b;
 			}
 			else
-				if (i == tam - 2 && j == 0) {
-					L_r[i][j] = b;
+				if (m == tam - 2 && n == 0) {
+					L_r[m][n] = b;
 				}
-				else if (i == j && i != tam - 1) {
-					L_r[i][j] = a;
+				else if (m == n && m != tam - 1) {
+					L_r[m][n] = a;
 				}
-				else if (i + 1 == j && j != tam - 1) {
-					L_r[i][j] = b;
+				else if (m + 1 == n && n != tam - 1) {
+					L_r[m][n] = b;
 				}
-				else if (i - 1 == j && i != tam - 1) {
-					L_r[i][j] = b;
+				else if (m - 1 == n && m != tam - 1) {
+					L_r[m][n] = b;
 				}
-				else if (j == tam - 1) {
-					L_r[i][j] = c;
+				else if (n == tam - 1) {
+					L_r[m][n] = c;
 				}
-				else if (i == tam - 1) {
-					L_r[i][j] = c;
+				else if (m == tam - 1) {
+					L_r[m][n] = c;
 				}
 				else {
-					L_r[i][j] = Lki;
+					L_r[m][n] = Lki;
 				}
 		}
 	}
@@ -241,16 +241,16 @@ void assemble_Lsr() { //TODO: corrigir
 
 	double alpha = 2 * pi / (tam - 1);
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < tam -1; j++) {
-			if (i == 0) {
-				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2));
+	for (int m = 0; m < 3; m++) {
+		for (int n = 0; n < tam - 1; n++) {
+			if (m == 0) {
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2));
 			}
-			if (i == 1) {
-				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2)-2*pi/3);
+			if (m == 1) {
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) - 2 * pi / 3);
 			}
-			if (i == 2) {
-				L_sr[i][j] = Lsr * cos(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
+			if (m == 2) {
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) + 2 * pi / 3);
 			}
 		}
 	}
@@ -258,36 +258,36 @@ void assemble_Lsr() { //TODO: corrigir
 
 void assemble_dLsr() {
 
-	double alpha = 2 * pi / (tam-1);
+	double alpha = 2 * pi / (tam - 1);
 	double K = -p * Lsr * om;
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < tam -1 ; j++) {
-			if (i == 0) {
-				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2));
+	for (int m = 0; m < 3; m++) {
+		for (int n = 0; n < tam - 1; n++) {
+			if (m == 0) {
+				dL_sr[m][n] = K * sin(p * (teta + n * alpha + alpha / 2));
 			}
-			if (i == 1) {
-				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2) - 2 * pi / 3);
+			if (m == 1) {
+				dL_sr[m][n] = K * sin(p * (teta + n * alpha + alpha / 2) - 2 * pi / 3);
 			}
-			if (i == 2) {
-				dL_sr[i][j] = K * sin(p * (teta + j * alpha + alpha / 2) + 2 * pi / 3);
+			if (m == 2) {
+				dL_sr[m][n] = K * sin(p * (teta + n * alpha + alpha / 2) + 2 * pi / 3);
 			}
 		}
 	}
 }
 
 void assemble_Lrs(void) {
-	for (int i = 0; i < tam; i++) {
-		for (int j = 0; j < 3; j++) {
-			L_rs[i][j] = L_sr[j][i];
+	for (int m = 0; m < tam; m++) {
+		for (int n = 0; n < 3; n++) {
+			L_rs[m][n] = L_sr[n][m];
 		}
 	}
 }
 
 void assemble_dLrs(void) {
-	for (int i = 0; i < tam; i++) {
-		for (int j = 0; j < 3; j++) {
-			dL_rs[i][j] = dL_sr[j][i];
+	for (int m = 0; m < tam; m++) {
+		for (int n = 0; n < 3; n++) {
+			dL_rs[m][n] = dL_sr[n][m];
 		}
 	}
 }
@@ -370,32 +370,33 @@ void assemble_L_s(void) {
 
 void assemble_L(void) {
 
-	assemble_L_s(); 
+	assemble_L_s();
 	assemble_Lsr();
 	assemble_Lrs();
 	assemble_Lr();
+	int m, n;
 
-	for (int i = 1; i <= 3; i++) {
-		for (int j = 1; j <= 3; j++) {
-			L[i][j] = L_s[i-1][j-1];
+	for ( m = 1; m <= 3; m++) {
+		for ( n = 1; n <= 3; n++) {
+			L[m][n] = L_s[m - 1][n - 1];
 		}
 	}
-	for (i = 1; i <= 3; i++) {
-		for (j = 4; j <= tam+3; j++) {
-			L[i][j] = L_sr[i - 1][j - 4];
+	for (m = 1; m <= 3; m++) {
+		for (n = 4; n <= tam + 3; n++) {
+			L[m][n] = L_sr[m - 1][n - 4];
 		}
 	}
-	for (i = 4; i <= tam+3; i++) {
-		for (j = 1; j <= 3; j++) {
-			L[i][j] = L_rs[i - 4][j - 1];
+	for (m = 4; m <= tam + 3; m++) {
+		for (n = 1; n <= 3; n++) {
+			L[m][n] = L_rs[m - 4][n - 1];
 		}
 	}
-	for (i = 4; i <= tam+3; i++) {
-		for (j = 4; j <= tam + 3; j++) {
-			L[i][j] = L_r[i - 4][j - 4];
+	for (m = 4; m <= tam + 3; m++) {
+		for (n = 4; n <= tam + 3; n++) {
+			L[m][n] = L_r[m - 4][n - 4];
 		}
 	}
-	L[tam+3+1][tam+3+1] = Jt;
+	L[tam + 3 + 1][tam + 3 + 1] = Jt;
 	L[tam + 3 + 2][tam + 3 + 2] = 1.0;
 }
 
@@ -406,33 +407,34 @@ void assemble_R(void) {
 	assemble_dLrs();
 	assemble_Rr();
 	double alpha = 2 * pi / tam;
+	int m, n;
 
-	for (int i = 1; i <= 3; i++) {
-		for (int j = 1; j <= 3; j++) {
-			R[i][j] = R_s[i - 1][j - 1];
+	for ( m = 1; m <= 3; m++) {
+		for ( n = 1; n <= 3; n++) {
+			R[m][n] = R_s[m - 1][n - 1];
 		}
 	}
-	for (i = 1; i <= 3; i++) {
-		for (j = 4; j <= tam + 3; j++) {
-			R[i][j] = dL_sr[i - 1][j - 4]; 
+	for (m = 1; m <= 3; m++) {
+		for (n = 4; n <= tam + 3; n++) {
+			R[m][n] = dL_sr[m - 1][n - 4];
 		}
 	}
-	for (i = 4; i <= tam + 3; i++) {
-		for (j = 1; j <= 3; j++) {
-			R[i][j] = dL_rs[i - 4][j - 1];
+	for (m = 4; m <= tam + 3; m++) {
+		for (n = 1; n <= 3; n++) {
+			R[m][n] = dL_rs[m - 4][n - 1];
 		}
 	}
-	for (i = 4; i <= tam + 3; i++) {
-		for (j = 4; j <= tam + 3; j++) {
-			R[i][j] = R_r[i - 4][j - 4];
+	for (m = 4; m <= tam + 3; m++) {
+		for (n = 4; n <= tam + 3; n++) {
+			R[m][n] = R_r[m - 4][n - 4];
 		}
 	}
 
-	for (j = 4; j <= tam + 2; j++) {
-		double X1 = p * (teta + j - 4 * alpha + alpha / 2);
-		double X2 = p * (teta + j - 4 * alpha + alpha / 2) - 2 * pi / 3;
-		double X3 = p * (teta + j - 4 * alpha + alpha / 2) + 2 * pi / 3;
-		R[tam + 4][j] = Lsr * p * ( isa1 * sin(X1) + isb1 * sin(X2)+ isc1 * sin(X3));
+	for (n = 4; n <= tam + 2; n++) {
+		double X1 = p * (teta + n - 4 * alpha + alpha / 2);
+		double X2 = p * (teta + n - 4 * alpha + alpha / 2) - 2 * pi / 3;
+		double X3 = p * (teta + n - 4 * alpha + alpha / 2) + 2 * pi / 3;
+		R[tam + 4][n] = Lsr * p * (isa1 * sin(X1) + isb1 * sin(X2) + isc1 * sin(X3));
 	}
 	R[tam + 3 + 1][tam + 3 + 1] = fv;
 	R[tam + 3 + 2][tam + 3 + 1] = -1.0;
