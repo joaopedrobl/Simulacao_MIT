@@ -14,6 +14,7 @@
 #define Niter  10       //20 ;200;40(com conversor)         /* N�mero loops antes de pegar um  ponto */
 #define dt     0.00001 //0.0000025//0.000005 //0.000001 (com conversor) /* DeltaT de simula��o dividido por Niter  0.00001 com Niter = 10 para ter Fa = 10kHz -freq. de amostragem*/
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tens�o m�xima nos bornes da carga*/
+#define SIZE 29
 
 int i, j;
 
@@ -29,18 +30,18 @@ int i, j;
 
 // Dados obtidos a partir dos ensaios classicos realizados pelo Clayton
 // Maq. weg 60 (1 cv, lab.)
-const double Rs = 12.5;         /*  resist�ncia do estator    */
+//const double Rs = 12.5;         /*  resist�ncia do estator    */
 //const double Lls = 0.0383;      /*  Indut�ncia de dispers�o do estator  lsl  */
-const double Lls = 0.007;
-double Lms = 0.4506;      /*  Indut�ncia principal (pr�pia) do estator  Lsp  */
-double Lsr = 0.4506;      /*  Indut�ncia m�tua estator-rotor  Msr */
-const double Rr = 8.9;           /*  resist�ncia do rotor   */
-const double Llr = 0.0383;      /*  Indut�ncia de dispers�o do rotor  lrl */
-const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
-const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
-const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
+//const double Lls = 0.007;
+//double Lms = 0.4506;      /*  Indut�ncia principal (pr�pia) do estator  Lsp  */
+//double Lsr = 0.4506;      /*  Indut�ncia m�tua estator-rotor  Msr */
+//const double Rr = 8.9;           /*  resist�ncia do rotor   */
+//const double Llr = 0.0383;      /*  Indut�ncia de dispers�o do rotor  lrl */
+//const double Lmr = 0.4506;      /*  Indut�ncia principal do rotor  Lrp */
+//const double Lsc = 1.5* Lms + Lls; /*  Indut�ncia c�clica do estator   */
+//const double Lrc = 1.5* Lmr + Llr; /*  Indut�ncia c�clica do rotor   */
 //const double p = 1.0;           /*  N�mero de pares de p�los   */
-const double p = 2.0;           /*  N�mero de pares de p�los   */
+const double p = 1.0;           /*  N�mero de pares de p�los   */
 const double Jt = 0.023976 * 1.;  /*  Momento de In�rcia   */
 const double fv = 1. * 0.0014439; /*  coeficiente de atrito din�mico   */
 
@@ -50,7 +51,7 @@ const double Ns = 156; /* Número de voltas da bobina do estator */
 const double rs = 1.5; /* Resitencia do estator */
 const double Ls1 = 0.007; /* Indutância de dispersão do estator */
 
-const double nb = 6; /* Número de barras do rotor */
+const double nb = 28; /* Número de barras do rotor */
 const double Rb = 0.000096940036 ; /*  resistência das barras   */
 const double Re = 0.000005 ;	/* resistencia do endring */
 const double Lb = 0.00000028 ; /* Auto indutância da barra do rotor */
@@ -62,6 +63,7 @@ const double l = 0.120 ; /* Comprimento efetivo do rotor */
 
 const double mu  = 0.00000125663;
 
+double Lsr, Lms;
 
 
 // **********************************************************************
@@ -86,6 +88,7 @@ const double mu  = 0.00000125663;
 // **********************************************************************
 
 double oms, Cr, teta, va1, vb1, vc1, isa1, isb1, isc1, ir1, ir2, ir3, ir4, ir5, ir6, ire, t, om, te, Rbf;
+double ir7, ir8, ir9, ir10, ir11, ir12, ir13, ir14, ir15, ir16, ir17, ir18, ir19, ir20, ir21, ir22, ir23, ir24, ir25, ir26, ir27, ir28;
 
 /* iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii*/
 
@@ -104,19 +107,21 @@ double K1, K2, K3, K4, K5, K6;
 matrice dL, A, b, inv_L, B;
 vecteur x, U, BU, Ad;
 
-double R_r[7][7];
-double L_r[7][7];
-double L_sr[3][7];
-double dL_sr[3][7];
-double L_rs[7][3];
-double dL_rs[7][3];
+int tam = 29;
+
+double R_r[SIZE][SIZE];
+double L_r[SIZE][SIZE];
+double L_sr[3][SIZE];
+double dL_sr[3][SIZE];
+double L_rs[SIZE][3];
+double dL_rs[SIZE][3];
 double R_s[3][3];
 double L_s[3][3];
 
-double L[13][13];
-double R[13][13];
+double L[SIZE+6][SIZE+6];
+double R[SIZE+6][SIZE+6];
 
-int tam = 7;
+
 
 /* M�todo espec�fico de invers�o de Matriz SVD */
 vecteur w;
@@ -194,7 +199,7 @@ void assemble_Rr(void)
 void assemble_Lr(void)
 {
 
-	double alpha = 2 * pi / tam;
+	double alpha = 2 * pi / nb;
 	double Lkk = (mu * l * r / g) * (1 - alpha / (2 * pi)) * alpha;
 	double Lki = -((mu * l * r) / g) * ((alpha * alpha) / (2 * pi));
 	double Ld = Lkk + 2 * (Le + Lb);
@@ -203,7 +208,7 @@ void assemble_Lr(void)
 	double a = Ld;
 	double b = Lt;
 	double c = -Le;
-	double d = (tam - 1) * Le;
+	double d = nb * Le;
 
 	for (int m = 0; m < tam; m++) {
 		for (int n = 0; n < tam; n++) {
@@ -237,20 +242,20 @@ void assemble_Lr(void)
 	L_r[tam - 1][tam - 1] = d;
 }
 
-void assemble_Lsr() { //TODO: corrigir 
+void assemble_Lsr() { 
 
-	double alpha = 2 * pi / (tam - 1);
+	double alpha = 2 * pi / nb;
 
 	for (int m = 0; m < 3; m++) {
 		for (int n = 0; n < tam - 1; n++) {
 			if (m == 0) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2));
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)));
 			}
 			if (m == 1) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) - 2 * pi / 3);
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)) - 2 * pi / 3);
 			}
 			if (m == 2) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) + 2 * pi / 3);
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)) + 2 * pi / 3);
 			}
 		}
 	}
@@ -258,7 +263,7 @@ void assemble_Lsr() { //TODO: corrigir
 
 void assemble_dLsr() {
 
-	double alpha = 2 * pi / (tam - 1);
+	double alpha = 2 * pi / nb;
 	double K = -p * Lsr * om;
 
 	for (int m = 0; m < 3; m++) {
@@ -293,11 +298,11 @@ void assemble_dLrs(void) {
 }
 
 void assemble_R_s(void) {
-	R_s[0][0] = R_s[1][1] = R_s[2][2] = Rs;
+	R_s[0][0] = R_s[1][1] = R_s[2][2] = rs;
 }
 
 void assemble_L_s(void) {
-	L_s[0][0] = L_s[1][1] = L_s[2][2] = Lls + Lms;
+	L_s[0][0] = L_s[1][1] = L_s[2][2] = Ls1 + Lms;
 	L_s[0][1] = L_s[0][2] = L_s[1][2] = L_s[1][0] = L_s[2][0] = L_s[2][1] = -0.5 * Lms;
 }
 
@@ -431,9 +436,9 @@ void assemble_R(void) {
 	}
 
 	for (n = 4; n <= tam + 2; n++) {
-		double X1 = p * (teta + n - 4 * alpha + alpha / 2);
-		double X2 = p * (teta + n - 4 * alpha + alpha / 2) - 2 * pi / 3;
-		double X3 = p * (teta + n - 4 * alpha + alpha / 2) + 2 * pi / 3;
+		double X1 = p * (teta + (n - 4) * alpha + alpha / 2);
+		double X2 = p * (teta + (n - 4) * alpha + alpha / 2) - 2 * pi / 3;
+		double X3 = p * (teta + (n - 4) * alpha + alpha / 2) + 2 * pi / 3;
 		R[tam + 4][n] = Lsr * p * (isa1 * sin(X1) + isb1 * sin(X2) + isc1 * sin(X3));
 	}
 	R[tam + 3 + 1][tam + 3 + 1] = fv;
@@ -510,8 +515,8 @@ void calcul_de_U(void)
 	oms = 2 * pi * fs;
 
 	va1 = Umax * cos(oms * t);
-	vb1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
-	vc1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	vb1 = Umax * cos(oms * t - 2.0 * pi / 3.0);
+	vc1 = Umax * cos(oms * t + 2.0 * pi / 3.0);
 
 	vsdef = 0.0;
 
@@ -520,9 +525,13 @@ void calcul_de_U(void)
 	U[2] = vb1;
 	U[3] = vc1;
 	U[4] = U[5] = U[6] = U[7] = U[8] = U[9] = 0.0;  // Tens�es Rot�ricas
-	U[10] = 0.0; // Tensão endring
-	U[11] = -Cr;            // Conjugado de Carga (resistente)
-	U[12] = 0.0;
+	U[10] = U[11] = U[12] = U[13] = U[14] = U[15] = 0.0;  // Tens�es Rot�ricas
+	U[16] = U[17] = U[18] = U[19] = U[20] = U[21] = 0.0;
+	U[22] = U[23] = U[24] = U[25] = U[26] = U[27] = 0.0;
+	U[28] = U[29] = U[30] = U[31] = 0.0;
+	U[32] = 0.0; // Tensão endring
+	U[33] = -Cr;            // Conjugado de Carga (resistente)
+	U[34] = 0.0;
 }
 
 
@@ -588,9 +597,33 @@ void init()
 	ir4 = x[7] = 0;
 	ir5 = x[8] = 0;
 	ir6 = x[9] = 0;
-	ire = x[10] = 0;
-	om = x[11] = 0;
-	teta = x[12] = 0;
+	ir7 = x[10] = 0;
+	ir8 = x[11] = 0;
+	ir9 = x[12] = 0;
+	ir10 = x[13] = 0;
+	ir11 = x[14] = 0;
+	ir12 = x[15] = 0;
+	ir13 = x[16] = 0;
+	ir14 = x[17] = 0;
+	ir15 = x[18] = 0;
+	ir16 = x[19] = 0;
+	ir17 = x[20] = 0;
+	ir18 = x[21] = 0;
+	ir19 = x[22] = 0;
+	ir20 = x[23] = 0;
+	ir21 = x[24] = 0;
+	ir22 = x[25] = 0;
+	ir23 = x[26] = 0;
+	ir24 = x[27] = 0;
+	ir25 = x[28] = 0;
+	ir26 = x[29] = 0;
+	ir27 = x[30] = 0;
+	ir28 = x[31] = 0;
+	ire = x[32] = 0;
+	om = x[33] = 0;
+	teta = x[34] = 0;
+
+
 
 }
 
@@ -684,13 +717,39 @@ void mas()
 	ir4 = x[7];
 	ir5 = x[8];
 	ir6 = x[9];
-	ire = x[10];
-	om = x[11];
-	teta = x[12];
+	ir7 = x[10];
+	ir8 = x[11];
+	ir9 = x[12];
+	ir10 = x[13];
+	ir11 = x[14];
+	ir12 = x[15];
+	ir13 = x[16];
+	ir14 = x[17];
+	ir15 = x[18];
+	ir16 = x[19];
+	ir17 = x[20];
+	ir18 = x[21];
+	ir19 = x[22];
+	ir20 = x[23];
+	ir21 = x[24];
+	ir22 = x[25];
+	ir23 = x[26];
+	ir24 = x[27];
+	ir25 = x[28];
+	ir26 = x[29];
+	ir27 = x[30];
+	ir28 = x[31];
+	ire = x[32];
+	om = x[33];
+	teta = x[34];
 
 	/* C�lculo do conjugado duas formas equivalentes*/
+	te = 0;
+	for (int m = 0; m <= nb; m++) {
+		te += -(R[tam + 4][4 + m] * x[4 + m]);
+	}
 
-	te = -(R[11][4] * ir1 + R[11][5] * ir2 + R[11][6] * ir3 + R[11][7] * ir4 + R[11][8] * ir5 + R[11][9] * ir6);
+	double te2 = -(R[13][4] * ir1 + R[13][5] * ir2 + R[13][6] * ir3 + R[13][7] * ir4 + R[13][8] * ir5 + R[13][9] * ir6 + R[13][10] * ir7 + R[13][11] * ir8);
 
 	// Para determina��o da tens�o entre os neutros
 	// C�lculo da tensao nos bornes da carga e tensao de neutro
@@ -741,7 +800,7 @@ int wmain()
 {
 
 	Lms = (Ns / (2 * p)) * (Ns / (2 * p)) * ((pi * mu * l * r) / g);
-	Lsr = 4 / pi * Lms / Ns * sin(p * pi / 6);
+	Lsr = 4 / pi * Lms / Ns * sin(p * (2*pi) / (2*nb));
 
 
 	init();    /* x est rempli � 0 */
@@ -754,7 +813,7 @@ int wmain()
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	/* denomina��o do arquivo de sa�da */
 	//fic=fopen("s000c30c100bi11_30A.dat","w");
-	fic = fopen("joao_pedro_6_barras.dat", "w");
+	fic = fopen("joao_pedro_6_barras_3.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 	results = mmake(NiterG, 11);
