@@ -162,7 +162,7 @@ void assemble_Rr(void)
 	double a = 2 * (Rb + Re);
 	double b = -Rb;
 	double c = -Re;
-	double d = tam * Re;
+	double d = nb * Re;
 
 	for (int m = 0; m < tam; m++) {
 		for (int n = 0; n < tam; n++) {
@@ -249,13 +249,13 @@ void assemble_Lsr() {
 	for (int m = 0; m < 3; m++) {
 		for (int n = 0; n < tam - 1; n++) {
 			if (m == 0) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)));
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2));
 			}
 			if (m == 1) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)) - 2 * pi / 3);
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) - 2 * pi / 3);
 			}
 			if (m == 2) {
-				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + (alpha / 2)) + 2 * pi / 3);
+				L_sr[m][n] = Lsr * cos(p * (teta + n * alpha + alpha / 2) + 2 * pi / 3);
 			}
 		}
 	}
@@ -411,7 +411,7 @@ void assemble_R(void) {
 	assemble_dLsr();
 	assemble_dLrs();
 	assemble_Rr();
-	double alpha = 2 * pi / tam;
+	double alpha = 2 * pi / nb;
 	int m, n;
 
 	for ( m = 1; m <= 3; m++) {
