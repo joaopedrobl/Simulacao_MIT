@@ -194,6 +194,12 @@ void assemble_Rr(void)
 		}
 	}
 	R_r[tam - 1][tam - 1] = d;
+	int broken = 4;
+	double Rbb = 1.5 * Rb;
+	R_r[broken - 1][broken - 1] = R_r[broken - 1][broken - 1] + Rbb;
+	R_r[broken - 1][broken] = R_r[broken - 1][broken] + Rbb;
+	R_r[broken][broken - 1] = R_r[broken][broken - 1] + Rbb;
+	R_r[broken][broken] = R_r[broken][broken] + Rbb;
 }
 
 void assemble_Lr(void)
