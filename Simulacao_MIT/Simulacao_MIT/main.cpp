@@ -16,6 +16,8 @@
 #define Umax   311  //1600 //439.82//1600 //311=220*sqrt(2) 129*sqrt(2)=179,61 /*Tens�o m�xima nos bornes da carga*/
 #define SIZE 29
 
+#define FALHA
+
 int i, j;
 
 // Dados de Placa do Motor de Indu��o Trif�sico WEG 60
@@ -194,12 +196,31 @@ void assemble_Rr(void)
 		}
 	}
 	R_r[tam - 1][tam - 1] = d;
-	int broken = 4;
-	double Rbb = 1.5 * Rb;
-	R_r[broken - 1][broken - 1] = R_r[broken - 1][broken - 1] + Rbb;
-	R_r[broken - 1][broken] = R_r[broken - 1][broken] + Rbb;
-	R_r[broken][broken - 1] = R_r[broken][broken - 1] + Rbb;
+#ifdef FALHA
+	int broken = 3;
+	double Rbb = 0;//1000 * Rb;
+
+	//R_r[broken][broken] = R_r[broken][broken] + Rbb;
+	//R_r[broken][broken + 1] = R_r[broken][broken + 1] - Rbb;
+
+	//R_r[broken+1][broken] = R_r[broken + 1][broken] - Rbb;
+	//R_r[broken + 1][broken + 1] = R_r[broken + 1][broken + 1] + 2 * Rbb;
+	//R_r[broken + 1][broken + 2] = R_r[broken + 1][broken + 2] - Rbb;
+
+	//R_r[broken + 2][broken + 1] = R_r[broken + 2][broken + 1] - Rbb;
+	//R_r[broken + 2][broken + 2] = R_r[broken + 2][broken + 2] + Rbb;
+
+
 	R_r[broken][broken] = R_r[broken][broken] + Rbb;
+	R_r[broken][broken +1] = R_r[broken][broken +1] - Rbb;
+	R_r[broken + 1][broken] = R_r[broken + 1][broken] - Rbb;
+	R_r[broken + 1][broken + 1] = R_r[broken + 1][broken + 1] + Rbb;
+	// 
+	// 
+	//R_r[broken - 1][broken] = R_r[broken - 1][broken] - Rbb;
+	//R_r[broken][broken - 1] = R_r[broken][broken - 1] - Rbb;
+	//R_r[broken][broken] = R_r[broken][broken] + Rbb;
+#endif
 }
 
 void assemble_Lr(void)
@@ -530,12 +551,12 @@ void calcul_de_U(void)
 	U[1] = va1;
 	U[2] = vb1;
 	U[3] = vc1;
-	U[4] = U[5] = U[6] = U[7] = U[8] = U[9] = 0.0;  // Tens�es Rot�ricas
-	U[10] = U[11] = U[12] = U[13] = U[14] = U[15] = 0.0;  // Tens�es Rot�ricas
-	U[16] = U[17] = U[18] = U[19] = U[20] = U[21] = 0.0;
-	U[22] = U[23] = U[24] = U[25] = U[26] = U[27] = 0.0;
-	U[28] = U[29] = U[30] = U[31] = 0.0;
-	U[32] = 0.0; // Tensão endring
+	//U[4] = U[5] = U[6] = U[7] = U[8] = U[9] = 0.0;  // Tens�es Rot�ricas
+	//U[10] = U[11] = U[12] = U[13] = U[14] = U[15] = 0.0;  // Tens�es Rot�ricas
+	//U[16] = U[17] = U[18] = U[19] = U[20] = U[21] = 0.0;
+	//U[22] = U[23] = U[24] = U[25] = U[26] = U[27] = 0.0;
+	//U[28] = U[29] = U[30] = U[31] = 0.0;
+	//U[32] = 0.0; // Tensão endring
 	U[33] = -Cr;            // Conjugado de Carga (resistente)
 	U[34] = 0.0;
 }
@@ -628,8 +649,6 @@ void init()
 	ire = x[32] = 0;
 	om = x[33] = 0;
 	teta = x[34] = 0;
-
-
 
 }
 
@@ -819,11 +838,12 @@ int wmain()
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	/* denomina��o do arquivo de sa�da */
 	//fic=fopen("s000c30c100bi11_30A.dat","w");
-	fic = fopen("joao_pedro_6_barras_3.dat", "w");
+	fic = fopen("joao_pedro_6_barras_quebra.dat", "w");
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-	results = mmake(NiterG, 11);
+	results = mmake(NiterG, 29);
 
+#ifndef FALHA
 	results->mat[i][0] = t;
 	results->mat[i][1] = om;
 	results->mat[i][2] = isa1;
@@ -836,6 +856,38 @@ int wmain()
 	results->mat[i][9] = ir2;
 	results->mat[i][10] = ir3;
 
+#else
+
+	results->mat[i][0] = t;
+	results->mat[i][1] = ir1;
+	results->mat[i][2] = ir2;
+	results->mat[i][3] = ir3;
+	results->mat[i][4] = ir4;
+	results->mat[i][5] = ir5;
+	results->mat[i][6] = ir6;
+	results->mat[i][7] = ir7;
+	results->mat[i][8] = ir8;
+	results->mat[i][9] = ir9;
+	results->mat[i][10] = ir10;
+	results->mat[i][11] = ir11;
+	results->mat[i][12] = ir12;
+	results->mat[i][13] = ir13;
+	results->mat[i][14] = ir14;
+	results->mat[i][15] = ir15;
+	results->mat[i][16] = ir16;
+	results->mat[i][17] = ir17;
+	results->mat[i][18] = ir18;
+	results->mat[i][19] = ir19;
+	results->mat[i][20] = ir20;
+	results->mat[i][21] = ir21;
+	results->mat[i][22] = ir22;
+	results->mat[i][23] = ir23;
+	results->mat[i][24] = ir24;
+	results->mat[i][25] = ir25;
+	results->mat[i][26] = ir26;
+	results->mat[i][27] = isa1;
+	results->mat[i][28] = te;
+#endif
 
 	// Partida com carga para acelerar a simula��o
 
@@ -851,7 +903,7 @@ int wmain()
 			mas();
 			t = t + dt;
 		}
-
+#ifndef FALHA
 		results->mat[i][0] = t;
 		results->mat[i][1] = om;
 		results->mat[i][2] = isa1;
@@ -863,7 +915,38 @@ int wmain()
 		results->mat[i][8] = ir1;
 		results->mat[i][9] = ir2;
 		results->mat[i][10] = ir3;
+#else
+		results->mat[i][0] = t;
+		results->mat[i][1] = ir1;
+		results->mat[i][2] = ir2;
+		results->mat[i][3] = ir3;
+		results->mat[i][4] = ir4;
+		results->mat[i][5] = ir5;
+		results->mat[i][6] = ir6;
+		results->mat[i][7] = ir7;
+		results->mat[i][8] = ir8;
+		results->mat[i][9] = ir9;
+		results->mat[i][10] = ir10;
+		results->mat[i][11] = ir11;
+		results->mat[i][12] = ir12;
+		results->mat[i][13] = ir13;
+		results->mat[i][14] = ir14;
+		results->mat[i][15] = ir15;
+		results->mat[i][16] = ir16;
+		results->mat[i][17] = ir17;
+		results->mat[i][18] = ir18;
+		results->mat[i][19] = ir19;
+		results->mat[i][20] = ir20;
+		results->mat[i][21] = ir21;
+		results->mat[i][22] = ir22;
+		results->mat[i][23] = ir23;
+		results->mat[i][24] = ir24;
+		results->mat[i][25] = ir25;
+		results->mat[i][26] = ir26;
+		results->mat[i][27] = isa1;
+		results->mat[i][28] = te;
 
+#endif
 		if (_kbhit() && (_getch() == 27)) i = NiterG;
 
 	}
@@ -878,7 +961,20 @@ int wmain()
 
 	for (i = 0; i < NiterG; i++)
 	{
-		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
+		//fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
+		//	results->mat[i][0],
+		//	results->mat[i][1],
+		//	results->mat[i][2],
+		//	results->mat[i][3],
+		//	results->mat[i][4],
+		//	results->mat[i][5],
+		//	results->mat[i][6],
+		//	results->mat[i][7],
+		//	results->mat[i][8],
+		//	results->mat[i][9],
+		//	results->mat[i][10]);
+
+		fprintf(fic, "%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
 			results->mat[i][0],
 			results->mat[i][1],
 			results->mat[i][2],
@@ -889,7 +985,25 @@ int wmain()
 			results->mat[i][7],
 			results->mat[i][8],
 			results->mat[i][9],
-			results->mat[i][10]);
+			results->mat[i][10], 
+			results->mat[i][11],
+			results->mat[i][12],
+			results->mat[i][13],
+			results->mat[i][14],
+			results->mat[i][15],
+			results->mat[i][16],
+			results->mat[i][17],
+			results->mat[i][18],
+			results->mat[i][19],
+			results->mat[i][20],
+			results->mat[i][21],
+			results->mat[i][22],
+			results->mat[i][23],
+			results->mat[i][24],
+			results->mat[i][25],
+			results->mat[i][26],
+			results->mat[i][27],
+			results->mat[i][28]);
 	}
 
 	fclose(fic);
